@@ -21,17 +21,24 @@
 
 ;;; Code:
 (require 'json)
+(require 'cl-macs)
 (require 'url-http)
 (require 'rx)
 
 (defun llm-request--content ()
   "From the current buffer, return the content of the response."
-  (goto-char (point-min))
-    (re-search-forward (rx (seq line-start
-                                (zero-or-one control)
-                                line-end)))
-    (forward-line)
-    (buffer-substring-no-properties (point) (point-max)))
+  (buffer-substring-no-properties
+   (or (and (boundp 'url-http-end-of-headers) url-http-end-of-headers)
+      (save-match-data
+        (save-excursion
+          (goto-char (point-min))
+          (search-forward "\n\n" nil t)
+          (forward-line)
+          (point))))
+    (point-max)))
+
+(defvar-local llm-request--partial-callback nil
+  "The callback to call when a partial response is received.")
 
 (cl-defun llm-request-sync (url &key headers data timeout)
   "Make a request to URL.  The parsed response will be returned.
@@ -53,7 +60,15 @@ TIMEOUT is the number of seconds to wait for a response."
             (json-read-from-string (llm-request--content)))
         (error "LLM request timed out")))))
 
-(cl-defun llm-request-async (url &key headers data on-success on-error on-chunk)
+(defun llm-request--handle-new-content (&rest _)
+  "Handle new content in the current buffer."
+  (save-match-data
+    (save-excursion
+      (with-auto-compression-mode
+        (when llm-request--partial-callback
+          (funcall llm-request--partial-callback (llm-request--content)))))))
+
+(cl-defun llm-request-async (url &key headers data on-success on-success-raw on-error on-partial)
   "Make a request to URL.
 Nothing will be returned.
 
@@ -63,15 +78,25 @@ standard json header. This is optional.
 DATA will be jsonified and sent as the request body.
 This is required.
 
-ON-SUCCESS will be called with the response body as a json object.
-This is required.
+ON-SUCCESS will be called with the response body as a json
+object. This is optional in the case that ON-SUCCESS-DATA is set,
+and required otherwise.
 
 ON-ERROR will be called with the error code and a response-body.
 This is required.
 
-ON-CHUNK will be called with the potentially incomplete response
-body as a string.  This is an optional argument."
+ON-PARTIAL will be called with the potentially incomplete response
+body as a string.  This is an optional argument.
+
+ON-SUCCESS-RAW, if set, will be called in the buffer with the
+response body, and expect the response content. This is an
+optional argument, and mostly useful for streaming.  If not set,
+the buffer is turned into JSON and passed to ON-SUCCESS."
   (let ((url-request-method "POST")
+        ;; This is necessary for streaming, otherwise we get gzip'd data that is
+        ;; unparseable until the end. The responses should be small enough that
+        ;; this should not be any big loss.
+        (url-mime-encoding-string "identity")
         (url-request-extra-headers
          (append headers '(("Content-Type" . "application/json"))))
         (url-request-data (json-encode data)))
@@ -80,18 +105,23 @@ body as a string.  This is an optional argument."
             url
             ;; For some reason the closure you'd expect did not work here.
             (lambda (_ on-success on-error)
+              ;; No matter what, we need to stop listening for changes.
+              (remove-hook 'after-change-functions #'llm-request--handle-new-content t)
               (let ((code (url-http-parse-response)))
                 (if (eq code 200)
-                    (funcall on-success (json-read-from-string (llm-request--content)))
+                    (if on-success-raw
+                        (funcall on-success-raw (llm-request--content))
+                      (funcall on-success (json-read-from-string (llm-request--content))))
                   (funcall on-error code (ignore-errors
                                            (json-read-from-string (llm-request--content)))))))
             (list on-success on-error)
             t)))
-      (when on-chunk
+      (when (and buffer on-partial)
         (with-current-buffer buffer
+          (setq llm-request--partial-callback on-partial)
           (add-hook 'after-change-functions
-                    (lambda (_ _ _)
-                      (funcall on-chunk (llm-request--content)))))))))
+                    #'llm-request--handle-new-content
+                    nil t))))))
 
 (provide 'llm-request)
 ;;; llm-request.el ends here
