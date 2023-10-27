@@ -55,11 +55,11 @@ will use a reasonable default."
   (ignore provider)
   (cons "Open AI" "https://openai.com/policies/terms-of-use"))
 
-(defun llm-openai--embedding-request (provider string)
+(defun llm-openai--embedding-request (model string)
   "Return the request to the server for the embedding of STRING.
-PROVIDER is the llm-openai provider."
+MODEL is the embedding model to use, or nil to use the default.."
   `(("input" . ,string)
-    ("model" . ,(or (llm-openai-embedding-model provider) "text-embedding-ada-002"))))
+    ("model" . ,(or model "text-embedding-ada-002"))))
 
 (defun llm-openai--embedding-extract-response (response)
   "Return the embedding from the server RESPONSE."
@@ -81,14 +81,17 @@ PROVIDER is the llm-openai provider."
 (cl-defmethod llm-embedding-async ((provider llm-openai) string vector-callback error-callback)
   (unless (llm-openai-key provider)
     (error "To call Open AI API, add a key to the `llm-openai' provider."))
-  (llm-request-async "https://api.openai.com/v1/embeddings"
+  (let ((buf (current-buffer)))
+    (llm-request-async "https://api.openai.com/v1/embeddings"
                      :headers `(("Authorization" . ,(format "Bearer %s" (llm-openai-key provider))))
-                     :data (llm-openai--embedding-request provider string)
+                     :data (llm-openai--embedding-request (llm-openai-embedding-model provider) string)
                      :on-success (lambda (data)
-                                   (funcall vector-callback (llm-openai--embedding-extract-response data)))
+                                   (llm-request-callback-in-buffer
+                                    buf vector-callback (llm-openai--embedding-extract-response data)))
                      :on-error (lambda (_ data) 
-                                 (funcall error-callback 'error
-                                            (llm-openai--error-message data)))))
+                                 (llm-request-callback-in-buffer
+                                  buf error-callback 'error
+                                  (llm-openai--error-message data))))))
 
 (cl-defmethod llm-embedding ((provider llm-openai) string)
   (unless (llm-openai-key provider)
@@ -96,12 +99,12 @@ PROVIDER is the llm-openai provider."
   (llm-openai--handle-response
    (llm-request-sync "https://api.openai.com/v1/embeddings"
                :headers `(("Authorization" . ,(format "Bearer %s" (llm-openai-key provider))))
-               :data (llm-openai--embedding-request provider string))
+               :data (llm-openai--embedding-request (llm-openai-embedding-model provider) string))
    #'llm-openai--embedding-extract-response))
 
-(defun llm-openai--chat-request (provider prompt &optional return-json-spec streaming)
+(defun llm-openai--chat-request (model prompt &optional return-json-spec streaming)
   "From PROMPT, create the chat request data to send.
-PROVIDER is the llm-openai provider to use.
+MODEL is the model name to use.
 RETURN-JSON-SPEC is the optional specification for the JSON to return.
 STREAMING if non-nil, turn on response streaming."
   (let (request-alist system-prompt)
@@ -117,7 +120,11 @@ STREAMING if non-nil, turn on response streaming."
                                          (car example)
                                          (cdr example)))
                                (llm-chat-prompt-examples prompt) "\n"))))
-    (when system-prompt
+    ;; Add the system prompt only if there is no existing one.
+    (when (and system-prompt
+               (not (cl-some (lambda (p)
+                               (eq (llm-chat-prompt-interaction-role p) 'system))
+                             (llm-chat-prompt-interactions prompt))))
       (push (make-llm-chat-prompt-interaction :role 'system :content system-prompt)
             (llm-chat-prompt-interactions prompt)))
     (when streaming (push `("stream" . ,t) request-alist))
@@ -129,7 +136,7 @@ STREAMING if non-nil, turn on response streaming."
                                       ("content" . ,(string-trim (llm-chat-prompt-interaction-content p)))))
                                   (llm-chat-prompt-interactions prompt)))
           request-alist)
-    (push `("model" . ,(or (llm-openai-chat-model provider) "gpt-3.5-turbo-0613")) request-alist)
+    (push `("model" . ,(or model "gpt-3.5-turbo-0613")) request-alist)
     (when (llm-chat-prompt-temperature prompt)
       (push `("temperature" . ,(/ (llm-chat-prompt-temperature prompt) 2.0)) request-alist))
     (when (llm-chat-prompt-max-tokens prompt)
@@ -150,25 +157,36 @@ STREAMING if non-nil, turn on response streaming."
 (cl-defmethod llm-chat-async ((provider llm-openai) prompt response-callback error-callback)
   (unless (llm-openai-key provider)
     (error "To call Open AI API, the key must have been set"))
-  (llm-request-async "https://api.openai.com/v1/chat/completions"
+  (let ((buf (current-buffer)))
+    (llm-request-async "https://api.openai.com/v1/chat/completions"
       :headers `(("Authorization" . ,(format "Bearer %s" (llm-openai-key provider))))
-      :data (llm-openai--chat-request provider prompt)
-      :on-success (lambda (data) (funcall response-callback (llm-openai--extract-chat-response data)))
+      :data (llm-openai--chat-request (llm-openai-chat-model provider) prompt)
+      :on-success (lambda (data)
+                    (let ((response (llm-openai--extract-chat-response data)))
+                      (setf (llm-chat-prompt-interactions prompt)
+                            (append (llm-chat-prompt-interactions prompt)
+                                    (list (make-llm-chat-prompt-interaction :role 'assistant :content response))))
+                      (llm-request-callback-in-buffer buf response-callback response)))
       :on-error (lambda (_ data)
                   (let ((errdata (cdr (assoc 'error data))))
-                    (funcall error-callback 'error
+                    (llm-request-callback-in-buffer buf error-callback 'error
                              (format "Problem calling Open AI: %s message: %s"
                                      (cdr (assoc 'type errdata))
-                                     (cdr (assoc 'message errdata))))))))
+                                     (cdr (assoc 'message errdata)))))))))
 
 (cl-defmethod llm-chat ((provider llm-openai) prompt)
   (unless (llm-openai-key provider)
     (error "To call Open AI API, the key must have been set"))
-  (llm-openai--handle-response
-   (llm-request-sync "https://api.openai.com/v1/chat/completions"
-                     :headers `(("Authorization" . ,(format "Bearer %s" (llm-openai-key provider))))
-                     :data (llm-openai--chat-request provider prompt))
-   #'llm-openai--extract-chat-response))
+  (let ((response (llm-openai--handle-response
+                   (llm-request-sync "https://api.openai.com/v1/chat/completions"
+                                     :headers `(("Authorization" . ,(format "Bearer %s" (llm-openai-key provider))))
+                                     :data (llm-openai--chat-request (llm-openai-chat-model provider)
+                                                                     prompt))
+                   #'llm-openai--extract-chat-response)))
+    (setf (llm-chat-prompt-interactions prompt)
+          (append (llm-chat-prompt-interactions prompt)
+                  (list (make-llm-chat-prompt-interaction :role 'assistant :content response))))
+    response))
 
 (defvar-local llm-openai-current-response ""
   "The response so far from the server.")
@@ -197,20 +215,25 @@ STREAMING if non-nil, turn on response streaming."
 (cl-defmethod llm-chat-streaming ((provider llm-openai) prompt partial-callback response-callback error-callback)
   (unless (llm-openai-key provider)
     (error "To call Open AI API, the key must have been set"))
-  (llm-request-async "https://api.openai.com/v1/chat/completions"
-                     :headers `(("Authorization" . ,(format "Bearer %s" (llm-openai-key provider))))
-                     :data (llm-openai--chat-request provider prompt nil t)
-                     :on-error (lambda (_ data)
-                                 (let ((errdata (cdr (assoc 'error data))))
-                                   (funcall error-callback 'error
-                                            (format "Problem calling Open AI: %s message: %s"
-                                                    (cdr (assoc 'type errdata))
-                                                    (cdr (assoc 'message errdata))))))
-                     :on-partial (lambda (data)
-                                   (when-let ((response (llm-openai--get-partial-chat-response data)))
-                                     (funcall partial-callback response)))
-                     :on-success-raw (lambda (data)
-                                       (funcall response-callback (llm-openai--get-partial-chat-response data)))))
+  (let ((buf (current-buffer)))
+    (llm-request-async "https://api.openai.com/v1/chat/completions"
+                       :headers `(("Authorization" . ,(format "Bearer %s" (llm-openai-key provider))))
+                       :data (llm-openai--chat-request (llm-openai-chat-model provider) prompt nil t)
+                       :on-error (lambda (_ data)
+                                   (let ((errdata (cdr (assoc 'error data))))
+                                     (llm-request-callback-in-buffer buf error-callback 'error
+                                              (format "Problem calling Open AI: %s message: %s"
+                                                      (cdr (assoc 'type errdata))
+                                                      (cdr (assoc 'message errdata))))))
+                       :on-partial (lambda (data)
+                                     (when-let ((response (llm-openai--get-partial-chat-response data)))
+                                       (llm-request-callback-in-buffer buf partial-callback response)))
+                       :on-success-raw (lambda (data)
+                                         (let ((response (llm-openai--get-partial-chat-response data)))
+                                           (setf (llm-chat-prompt-interactions prompt)
+                                                 (append (llm-chat-prompt-interactions prompt)
+                                                         (list (make-llm-chat-prompt-interaction :role 'assistant :content response))))
+                                           (llm-request-callback-in-buffer buf response-callback response))))))
 
 (provide 'llm-openai)
 

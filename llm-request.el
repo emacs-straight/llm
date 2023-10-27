@@ -41,6 +41,8 @@
 (defvar-local llm-request--partial-callback nil
   "The callback to call when a partial response is received.")
 
+(defvar url-http-response-status)
+
 (cl-defun llm-request-sync-raw-output (url &key headers data timeout)
   "Make a request to URL.  The raw text response will be returned.
 
@@ -57,7 +59,15 @@ TIMEOUT is the number of seconds to wait for a response."
         (url-request-data (encode-coding-string (json-encode data) 'utf-8)))
     (let ((buf (url-retrieve-synchronously url t nil (or timeout 5))))
       (if buf
-          (with-current-buffer buf (llm-request--content))
+          (with-current-buffer buf
+            (url-http-parse-response)
+            (if (and (>= url-http-response-status 200)
+                     (< url-http-response-status 300))
+                (llm-request--content)
+                (error "LLM request failed with code %d: %s (additional information: %s)"
+                       url-http-response-status
+                       (nth 2 (assq url-http-response-status url-http-codes))
+                       (string-trim (llm-request--content)))))
         (error "LLM request timed out")))))
 
 (cl-defun llm-request-sync (url &key headers data timeout)
@@ -136,6 +146,15 @@ the buffer is turned into JSON and passed to ON-SUCCESS."
           (add-hook 'after-change-functions
                     #'llm-request--handle-new-content
                     nil t))))))
+
+;; This is a useful method for getting out of the request buffer when it's time
+;; to make callbacks.
+(defun llm-request-callback-in-buffer (buf f &rest args)
+  "Run F with ARSG in the context of BUF.
+But if BUF has been killed, use a temporary buffer instead."
+  (if (buffer-live-p buf)
+      (with-current-buffer buf (apply f args))
+    (with-temp-buffer (apply f args))))
 
 (provide 'llm-request)
 ;;; llm-request.el ends here
