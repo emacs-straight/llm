@@ -313,6 +313,36 @@ If STREAMING is non-nil, use the URL for the streaming API."
                                  (llm-request-callback-in-buffer buf error-callback 'error
                                                                  (llm-vertex--error-message data))))))
 
+;; Token counts
+;; https://cloud.google.com/vertex-ai/docs/generative-ai/get-token-count
+
+(defun llm-vertex--count-token-url (provider)
+  "Return the URL to use for the Vertex API.
+PROVIDER is the llm provider.
+MODEL "
+  (format "https://%s-aiplatform.googleapis.com/v1beta1/projects/%s/locations/%s/publishers/google/models/%s:countTokens"
+          llm-vertex-gcloud-region
+          (llm-vertex-project provider)
+          llm-vertex-gcloud-region
+          (or (llm-vertex-chat-model provider) "chat-bison")))
+
+(defun llm-vertex--to-count-token-request (request)
+  "Return a version of REQUEST that is suitable for counting tokens."
+  (seq-filter (lambda (c) (not (equal (car c) "parameters"))) request))
+
+(defun llm-vertex--count-tokens-extract-response (response)
+  "Extract the token count from the response."
+  (assoc-default 'totalTokens response))
+
+(cl-defmethod llm-count-tokens ((provider llm-vertex) string)
+  (llm-vertex-refresh-key provider)
+  (llm-vertex--handle-response
+   (llm-request-sync (llm-vertex--count-token-url provider)
+                     :headers `(("Authorization" . ,(format "Bearer %s" (llm-vertex-key provider))))
+                     :data (llm-vertex--to-count-token-request
+                            (llm-vertex--chat-request-v1 (llm-make-simple-chat-prompt string))))
+   #'llm-vertex--count-tokens-extract-response))
+
 (provide 'llm-vertex)
 
 ;;; llm-vertex.el ends here
