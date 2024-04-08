@@ -116,7 +116,7 @@ MODEL is the embedding model to use, or nil to use the default.."
           (unless (string-suffix-p "/" (llm-openai-compatible-url provider))
             "/") command))
 
-(cl-defmethod llm-provider-embedding-error-extractor ((_ llm-openai) err-response)
+(cl-defmethod llm-provider-embedding-extract-error ((_ llm-openai) err-response)
   (let ((errdata (assoc-default 'error err-response)))
       (when errdata
         (format "Open AI returned error: %s message: %s"
@@ -124,7 +124,7 @@ MODEL is the embedding model to use, or nil to use the default.."
                 (cdr (assoc 'message errdata))))))
 
 (cl-defmethod llm-provider-chat-extract-error ((provider llm-openai) err-response)
-  (llm-provider-embedding-error-extractor provider err-response))
+  (llm-provider-embedding-extract-error provider err-response))
 
 (cl-defmethod llm-provider-chat-request ((provider llm-openai) prompt streaming)
   "From PROMPT, create the chat request data to send.
@@ -151,7 +151,7 @@ STREAMING if non-nil, turn on response streaming."
                      (llm-chat-prompt-interactions prompt)))
           request-alist)
     (push `("model" . ,(or (llm-openai-chat-model provider)
-			   "gpt-3.5-turbo-0613")) request-alist)
+                           "gpt-3.5-turbo-0613")) request-alist)
     (when (llm-chat-prompt-temperature prompt)
       (push `("temperature" . ,(/ (llm-chat-prompt-temperature prompt) 2.0)) request-alist))
     (when (llm-chat-prompt-max-tokens prompt)
@@ -223,15 +223,15 @@ whether they have been parsed before or not."
         (last-response llm-openai-last-response))
     (let* ((all-lines (llm-openai--get-unparsed-json response))
            (processed-lines
-           (mapcar (lambda (json)
-                     (assoc-default 'content
-                                    (assoc-default
-                                     'delta
-                                     (aref (assoc-default
-                                            'choices
-                                            (json-read-from-string json))
-                                           0))))
-                   (seq-subseq all-lines last-response))))
+            (mapcar (lambda (json)
+                      (assoc-default 'content
+                                     (assoc-default
+                                      'delta
+                                      (aref (assoc-default
+                                             'choices
+                                             (json-read-from-string json))
+                                            0))))
+                    (seq-subseq all-lines last-response))))
       (when (stringp (car processed-lines))
         ;; The data is a string - a normal response, which we just
         ;; append to current-response (assuming it's also a string,
@@ -247,14 +247,14 @@ whether they have been parsed before or not."
 
 (cl-defmethod llm-provider-extract-streamed-function-calls ((_ llm-openai) response)
   (let* ((pieces (mapcar (lambda (json)
-			   (assoc-default 'tool_calls
-					  (assoc-default
-					   'delta
-					   (aref (assoc-default
-						  'choices
-						  (json-read-from-string json))
-						 0))))
-			 (llm-openai--get-unparsed-json response)))
+			               (assoc-default 'tool_calls
+					                      (assoc-default
+					                       'delta
+                                           (aref (assoc-default
+                                                  'choices
+                                                  (json-read-from-string json))
+                                                 0))))
+			             (llm-openai--get-unparsed-json response)))
          (cvec (make-vector (length (car pieces)) (make-llm-provider-utils-function-call))))
     (cl-loop for piece in pieces do
              (cl-loop for call in (append piece nil) do
@@ -274,7 +274,7 @@ whether they have been parsed before or not."
              do (setf (llm-provider-utils-function-call-args call)
                       (json-read-from-string (llm-provider-utils-function-call-args call)))
              finally return (when (> (length cvec) 0)
-			      (append cvec nil)))))
+			                  (append cvec nil)))))
 
 (cl-defmethod llm-name ((_ llm-openai))
   "Open AI")
