@@ -5,7 +5,7 @@
 ;; Author: Andrew Hyatt <ahyatt@gmail.com>
 ;; Homepage: https://github.com/ahyatt/llm
 ;; Package-Requires: ((emacs "28.1"))
-;; Package-Version: 0.12.3
+;; Package-Version: 0.13.0
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;
 ;; This program is free software; you can redistribute it and/or
@@ -296,7 +296,6 @@ be passed to `llm-cancel-request'."
          (result (cl-call-next-method provider prompt
                                       new-response-callback
                                       new-error-callback)))
-    
     result))
 
 (cl-defmethod llm-chat-function-call ((_ (eql nil)) _ _ _)
