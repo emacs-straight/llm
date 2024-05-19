@@ -45,7 +45,7 @@
 
 KEY is the API key for Open AI, which is required.
 
-CHAT-MODEL is the model to use for chat queries. If unset, it
+CHAT-MODEL is the model to use for chat queries.  If unset, it
 will use a reasonable default.
 
 EMBEDDING-MODEL is the model to use for embeddings.  If unset, it
@@ -55,18 +55,19 @@ will use a reasonable default."
 (cl-defstruct (llm-openai-compatible (:include llm-openai))
   "A structure for other APIs that use the Open AI's API.
 
-URL is the URL to use for the API, up to the command. So, for
+URL is the URL to use for the API, up to the command.  So, for
 example, if the API for chat is at
 https://api.example.com/v1/chat, then URL should be
 \"https://api.example.com/v1/\"."
   url)
 
 (cl-defmethod llm-nonfree-message-info ((_ llm-openai))
+  "Return Open AI's nonfree terms of service."
   "https://openai.com/policies/terms-of-use")
 
 (cl-defmethod llm-provider-embedding-request ((provider llm-openai) string)
   "Return the request to the server for the embedding of STRING.
-MODEL is the embedding model to use, or nil to use the default.."
+PROVIDER is the Open AI provider struct."
   `(("input" . ,string)
     ("model" . ,(or (llm-openai-embedding-model provider)
                     "text-embedding-3-small"))))
@@ -76,11 +77,11 @@ MODEL is the embedding model to use, or nil to use the default.."
   (assoc-default 'embedding (aref (assoc-default 'data response) 0)))
 
 (cl-defgeneric llm-openai--check-key (provider)
-  "Check that the key is set for the Open AI provider.")
+  "Check that the key is set for the Open AI PROVIDER.")
 
 (cl-defmethod llm-openai--check-key ((provider llm-openai))
   (unless (llm-openai-key provider)
-    (error "To call Open AI API, add a key to the `llm-openai' provider.")))
+    (error "To call Open AI API, add a key to the `llm-openai' provider")))
 
 (cl-defmethod llm-openai--check-key ((_ llm-openai-compatible))
   ;; It isn't always the case that a key is needed for Open AI compatible APIs.
@@ -95,9 +96,9 @@ MODEL is the embedding model to use, or nil to use the default.."
 
 (cl-defmethod llm-openai--headers ((provider llm-openai))
   (when-let ((key (llm-openai-key provider)))
-    ;; Encode the API key to ensure it is unibyte. The request library gets
+    ;; Encode the API key to ensure it is unibyte.  The request library gets
     ;; confused by multibyte headers, which turn the entire body multibyte if
-    ;; there’s a non-ascii character, regardless of encoding. And API keys are
+    ;; there’s a non-ascii character, regardless of encoding.  And API keys are
     ;; likely to be obtained from external sources like shell-command-to-string,
     ;; which always returns multibyte.
     `(("Authorization" . ,(format "Bearer %s" (encode-coding-string key 'utf-8))))))
@@ -126,10 +127,10 @@ MODEL is the embedding model to use, or nil to use the default.."
 
 (cl-defmethod llm-provider-embedding-extract-error ((_ llm-openai) err-response)
   (let ((errdata (assoc-default 'error err-response)))
-      (when errdata
-        (format "Open AI returned error: %s message: %s"
-                (cdr (assoc 'type errdata))
-                (cdr (assoc 'message errdata))))))
+    (when errdata
+      (format "Open AI returned error: %s message: %s"
+              (cdr (assoc 'type errdata))
+              (cdr (assoc 'message errdata))))))
 
 (cl-defmethod llm-provider-chat-extract-error ((provider llm-openai) err-response)
   (llm-provider-embedding-extract-error provider err-response))
@@ -223,26 +224,27 @@ RESPONSE can be nil if the response is complete."
     (dotimes (i (length (car data)))
       (setf (aref cvec i) (make-llm-provider-utils-function-call)))
     (cl-loop for part in data do
-         (cl-loop for call in (append part nil) do
-              (let* ((index (assoc-default 'index call))
-                 (id (assoc-default 'id call))
-                 (function (assoc-default 'function call))
-                 (name (assoc-default 'name function))
-                 (arguments (assoc-default 'arguments function)))
-            (when id
-              (setf (llm-provider-utils-function-call-id (aref cvec index)) id))
-            (when name
-              (setf (llm-provider-utils-function-call-name (aref cvec index)) name))
-            (setf (llm-provider-utils-function-call-args (aref cvec index))
-                  (concat (llm-provider-utils-function-call-args (aref cvec index))
-                      arguments)))))
+             (cl-loop for call in (append part nil) do
+                      (let* ((index (assoc-default 'index call))
+                             (id (assoc-default 'id call))
+                             (function (assoc-default 'function call))
+                             (name (assoc-default 'name function))
+                             (arguments (assoc-default 'arguments function)))
+                        (when id
+                          (setf (llm-provider-utils-function-call-id (aref cvec index)) id))
+                        (when name
+                          (setf (llm-provider-utils-function-call-name (aref cvec index)) name))
+                        (setf (llm-provider-utils-function-call-args (aref cvec index))
+                              (concat (llm-provider-utils-function-call-args (aref cvec index))
+                                      arguments)))))
     (cl-loop for call in (append cvec nil)
              do (setf (llm-provider-utils-function-call-args call)
                       (json-read-from-string (llm-provider-utils-function-call-args call)))
              finally return (when (> (length cvec) 0)
-                  (append cvec nil)))))
+                              (append cvec nil)))))
 
 (cl-defmethod llm-name ((_ llm-openai))
+  "Return the name of the provider."
   "Open AI")
 
 ;; See https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo
@@ -256,8 +258,9 @@ RESPONSE can be nil if the response is complete."
         ;; models, but not for 32k models.
         (+ (* n 1024) (if (= n 16) 1 0))))
      ((equal model "gpt-4") 8192)
+     ((equal model "gpt-4o") 128000)
      ((string-match-p (rx (seq "gpt-4-" (+ ascii) "-preview")) model)
-       128000)
+      128000)
      ((string-match-p (rx (seq "gpt-4-" (+ digit))) model)
       8192)
      ((string-match-p (rx (seq "gpt-3.5-turbo-1" (+ digit))) model)
