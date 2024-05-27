@@ -1,6 +1,6 @@
 ;;; llm-openai.el --- llm module for integrating with Open AI -*- lexical-binding: t; package-lint-main-file: "llm.el"; -*-
 
-;; Copyright (c) 2023  Free Software Foundation, Inc.
+;; Copyright (c) 2023, 2024  Free Software Foundation, Inc.
 
 ;; Author: Andrew Hyatt <ahyatt@gmail.com>
 ;; Homepage: https://github.com/ahyatt/llm
@@ -169,7 +169,7 @@ STREAMING if non-nil, turn on response streaming."
       (push `("tools" . ,(mapcar #'llm-provider-utils-openai-function-spec
                                  (llm-chat-prompt-functions prompt)))
             request-alist))
-    request-alist))
+    (append request-alist (llm-chat-prompt-non-standard-params prompt))))
 
 (cl-defmethod llm-provider-chat-extract-result ((_ llm-openai) response)
   (assoc-default 'content

@@ -1,6 +1,6 @@
 ;;; llm-vertex.el --- LLM implementation of Google Cloud Vertex AI -*- lexical-binding: t; package-lint-main-file: "llm.el"; -*-
 
-;; Copyright (c) 2023  Free Software Foundation, Inc.
+;; Copyright (c) 2023, 2024  Free Software Foundation, Inc.
 
 ;; Author: Andrew Hyatt <ahyatt@gmail.com>
 ;; Homepage: https://github.com/ahyatt/llm
@@ -221,7 +221,7 @@ the key must be regenerated every hour."
   "From PROMPT, create the parameters section.
 Return value is a cons for adding to an alist, unless there is
 nothing to add, in which case it is nil."
-  (let ((params-alist))
+  (let ((params-alist (llm-chat-prompt-non-standard-params prompt)))
     (when (llm-chat-prompt-temperature prompt)
       (push `(temperature . ,(llm-chat-prompt-temperature prompt))
             params-alist))
