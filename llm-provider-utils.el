@@ -1,4 +1,4 @@
-;;; llm-provider-utils.el --- Functions to make building providers easier -*- lexical-binding: t; package-lint-main-file: "llm.el"; -*-
+;;; llm-provider-utils.el --- Functions to make building providers easier -*- lexical-binding: t; package-lint-main-file: "llm.el"; ; byte-compile-docstring-max-column: 200-*-
 
 ;; Copyright (c) 2023, 2024  Free Software Foundation, Inc.
 
@@ -34,7 +34,32 @@ This represents any provider, regardless of what it implements.
 This should not be used outside of this file.")
 
 (cl-defstruct (llm-standard-chat-provider (:include llm-standard-provider))
-  "A struct for indicating a provider that implements chat.")
+  "A struct for indicating a provider that implements chat.
+DEFAULT-CHAT-TEMPERATURE is the default temperature for chats
+with the provider.  Any `temperature' specified in the chat
+prompt will override this.  This is optional, and if not set,
+when not overridden, the default value chosen by the provider
+will be used.
+
+DEFAULT-CHAT-MAX-TOKENS is the default maxmimum number of tokens
+for chats with the provider.  Any value for `max-tokens'
+specified in the chat prompt will override this.  This is
+optional, and if not set, when not overriden, no maximum will be
+specified to the provider.
+
+DEFAULT-CHAT-NON-STANDARD-PARAMS are per-provider params that
+will override and `non-standard-params' that are part of the
+prompt.  This is an alist of parameters, whose name and possible
+values will be different for each provider.  The overriding here
+is on a per-parameter basis, so the final value used in the chat
+can be a mix of these default parameters and others in the
+prompt.
+
+These values will be set as parameters on the prompt, so changing
+values after the initial call in the chat will not have an
+effect.  New values will have an effect, however."
+  default-chat-temperature default-chat-max-tokens
+  default-chat-non-standard-params)
 
 (cl-defstruct (llm-standard-full-provider (:include llm-standard-chat-provider))
   "A struct for providers that implements chat and embeddings.")
@@ -99,6 +124,21 @@ Return nil for the standard timeout.")
 (cl-defmethod llm-provider-chat-timeout ((_ llm-standard-provider))
   "By default, the standard provider has the standard timeout."
   nil)
+
+(cl-defmethod llm-provider-chat-request :before ((provider llm-standard-chat-provider) prompt _)
+  "Set PROVIDER default parameters where they do not existe in the PROMPT."
+  (setf (llm-chat-prompt-temperature prompt)
+        (or (llm-chat-prompt-temperature prompt)
+            (llm-standard-chat-provider-default-chat-temperature provider))
+        (llm-chat-prompt-max-tokens prompt)
+        (or (llm-chat-prompt-max-tokens prompt)
+            (llm-standard-chat-provider-default-chat-max-tokens provider))
+        (llm-chat-prompt-non-standard-params prompt)
+        ;; We need to merge the parameteres individually.
+        (seq-union (llm-chat-prompt-non-standard-params prompt)
+                   (llm-standard-chat-provider-default-chat-non-standard-params provider)
+                   (lambda (a b)
+                     (equal (car a) (car b))))))
 
 (cl-defgeneric llm-provider-chat-request (provider prompt streaming)
   "Return the request for the PROVIDER for PROMPT.
@@ -324,22 +364,22 @@ If there is an assistance response, do nothing.
 
 EXAMPLE-PRELUDE is the text to introduce any examples with."
   (let ((system-prompt (seq-find
-                          (lambda (interaction)
-                            (eq (llm-chat-prompt-interaction-role interaction) 'system))
-                          (llm-chat-prompt-interactions prompt)))
-          (system-content (llm-provider-utils-get-system-prompt prompt example-prelude)))
-      (when (and system-content (> (length system-content) 0))
-        (if system-prompt
-            (setf (llm-chat-prompt-interaction-content system-prompt)
-                  (concat (llm-chat-prompt-interaction-content system-prompt)
-                          "\n"
-                          system-content))
-          (push (make-llm-chat-prompt-interaction
-                 :role 'system
-                 :content system-content)
-                (llm-chat-prompt-interactions prompt))
-          (setf (llm-chat-prompt-context prompt) nil
-                (llm-chat-prompt-examples prompt) nil)))))
+                        (lambda (interaction)
+                          (eq (llm-chat-prompt-interaction-role interaction) 'system))
+                        (llm-chat-prompt-interactions prompt)))
+        (system-content (llm-provider-utils-get-system-prompt prompt example-prelude)))
+    (when (and system-content (> (length system-content) 0))
+      (if system-prompt
+          (setf (llm-chat-prompt-interaction-content system-prompt)
+                (concat (llm-chat-prompt-interaction-content system-prompt)
+                        "\n"
+                        system-content))
+        (push (make-llm-chat-prompt-interaction
+               :role 'system
+               :content system-content)
+              (llm-chat-prompt-interactions prompt))
+        (setf (llm-chat-prompt-context prompt) nil
+              (llm-chat-prompt-examples prompt) nil)))))
 
 (defun llm-provider-utils-combine-to-user-prompt (prompt &optional example-prelude)
   "Add context and examples to a user prompt in PROMPT.
@@ -347,12 +387,12 @@ This should be used for providers that do not have a notion of a system prompt.
 
 EXAMPLE-PRELUDE is the text to introduce any examples with."
   (when-let ((system-content (llm-provider-utils-get-system-prompt prompt example-prelude)))
-      (setf (llm-chat-prompt-interaction-content (car (llm-chat-prompt-interactions prompt)))
-            (concat system-content
-                    "\n"
-                    (llm-chat-prompt-interaction-content (car (llm-chat-prompt-interactions prompt))))
-            (llm-chat-prompt-context prompt) nil
-            (llm-chat-prompt-examples prompt) nil)))
+    (setf (llm-chat-prompt-interaction-content (car (llm-chat-prompt-interactions prompt)))
+          (concat system-content
+                  "\n"
+                  (llm-chat-prompt-interaction-content (car (llm-chat-prompt-interactions prompt))))
+          (llm-chat-prompt-context prompt) nil
+          (llm-chat-prompt-examples prompt) nil)))
 
 (defun llm-provider-utils-collapse-history (prompt &optional history-prelude)
   "Collapse history to a single PROMPT.
@@ -382,17 +422,17 @@ conversation history will follow."
 (defun llm-provider-utils-model-token-limit (model)
   "Return the token limit for MODEL."
   (let ((model (downcase model)))
-   (cond
-    ((string-match-p "mistral-7b" model) 8192)
-    ((string-match-p "mistral" model) 8192)
-    ((string-match-p "mixtral-45b" model) 131072)
-    ((string-match-p "mixtral" model) 131072)
-    ((string-match-p "falcon" model) 2048)
-    ((string-match-p "orca 2" model) 4096)
-    ((string-match-p "orca" model) 2048)
-    ((string-match-p "llama\s*2" model) 4096)
-    ((string-match-p "llama" model) 2048)
-    ((string-match-p "starcoder" model) 8192))))
+    (cond
+     ((string-match-p "mistral-7b" model) 8192)
+     ((string-match-p "mistral" model) 8192)
+     ((string-match-p "mixtral-45b" model) 131072)
+     ((string-match-p "mixtral" model) 131072)
+     ((string-match-p "falcon" model) 2048)
+     ((string-match-p "orca 2" model) 4096)
+     ((string-match-p "orca" model) 2048)
+     ((string-match-p "llama\s*2" model) 4096)
+     ((string-match-p "llama" model) 2048)
+     ((string-match-p "starcoder" model) 8192))))
 
 (defun llm-provider-utils-openai-arguments (args)
   "Convert ARGS to the Open AI function calling spec.
@@ -452,13 +492,13 @@ applicable to many endpoints.
 
 This returns a JSON object (a list that can be converted to JSON)."
   `((type . function)
-     (function
-      .
-      ,(append
-        `((name . ,(llm-function-call-name call))
-          (description . ,(llm-function-call-description call)))
-        (when (llm-function-call-args call)
-          `((parameters
+    (function
+     .
+     ,(append
+       `((name . ,(llm-function-call-name call))
+         (description . ,(llm-function-call-description call)))
+       (when (llm-function-call-args call)
+         `((parameters
             .
             ,(llm-provider-utils-openai-arguments (llm-function-call-args call)))))))))
 
