@@ -125,6 +125,8 @@
   ;; The code is straightforward, so no need to test all the models.
   (should (= 8192 (llm-chat-token-limit
                    (make-llm-ollama :chat-model "mistral:latest"))))
+  (should (= 131072 (llm-chat-token-limit
+                     (make-llm-vertex :chat-model "llama3.1-8b"))))
   (should (= 2048 (llm-chat-token-limit
                    (make-llm-ollama :chat-model "unknown")))))
 
@@ -132,6 +134,18 @@
   ;; The code is straightforward, so no need to test all the models.
   (should (= 8192 (llm-chat-token-limit
                    (make-llm-gpt4all :chat-model "Mistral")))))
+
+(ert-deftest llm-test-ollama-function-calling-capabilities ()
+  ;; tests subject to change as models may get function calling
+  (cl-flet ((has-fc (model)
+              (member 'function-calls (llm-capabilities (make-llm-ollama :chat-model model)))))
+    (should (has-fc "llama3.1"))
+    (should (has-fc "llama3.1:8b-instruct-q8_0"))
+    (should (has-fc "mistral"))
+    (should-not (has-fc "gemma"))
+    (should-not (has-fc "gemma2"))
+    (should-not (has-fc "llama2"))
+    (should-not (has-fc "llama"))))
 
 (provide 'llm-test)
 ;;; llm-test.el ends here
