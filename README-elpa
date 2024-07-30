@@ -198,8 +198,10 @@
     default to the default ollama port.
   • `:chat-model': The model name to use for chat.  This is not optional
     for chat use, since there is no default.
-  • `:embedding-model': The model name to use for embeddings.  This is
-    not optional for embedding use, since there is no default.
+  • `:embedding-model': The model name to use for embeddings (only [some
+    models](<https://ollama.com/search?q=&c=embedding>) can be used for
+    embeddings.  This is not optional for embedding use, since there is
+    no default.
 
 
 [Ollama] <https://ollama.ai/>
