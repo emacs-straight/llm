@@ -264,7 +264,38 @@
     error.
 
 
-3 `llm' and the use of non-free LLMs
+3 Models
+════════
+
+  When picking a chat or embedding model, anything can be used, as long
+  as the service thinks it is valid.  However, models vary on context
+  size and capabilities.  The `llm-prompt' module, and any client, can
+  depend on the context size of the model via `llm-chat-token-limit'.
+  Similarly, some models have different capabilities, exposed in
+  `llm-capabilities'.  The `llm-models' module defines a list of popular
+  models, but this isn't a comprehensive list.  If you want to add a
+  model, it is fairly easy to do, for example here is adding the Mistral
+  model (which is already included, though):
+
+  ┌────
+  │ (require 'llm-models)
+  │ (add-to-list
+  │  'llm-models
+  │  (make-llm-model
+  │   :name "Mistral" :symbol 'mistral
+  │   :capabilities '(generation tool-use free-software)
+  │   :context-length 8192
+  │   :regex "mistral"))
+  └────
+
+  The `:regex' needs to uniquely identify the model passed in from a
+  provider's chat or embedding model.
+
+  Once this is done, the model will be recognized to have the given
+  context length and capabilities.
+
+
+4 `llm' and the use of non-free LLMs
 ════════════════════════════════════
 
   The `llm' package is part of GNU Emacs by being part of GNU ELPA.
@@ -291,7 +322,7 @@
   └────
 
 
-4 Programmatic use
+5 Programmatic use
 ══════════════════
 
   Client applications should require the `llm' package, and code against
@@ -307,7 +338,7 @@
   will be executed in a temporary buffer instead.
 
 
-4.1 Main functions
+5.1 Main functions
 ──────────────────
 
   • `llm-chat provider prompt': With user-chosen `provider' , and a
@@ -371,7 +402,7 @@
       is optional, and defaults to `'user'.
 
 
-4.2 Logging
+5.2 Logging
 ───────────
 
   Interactions with the `llm' package can be logged by setting `llm-log'
@@ -379,7 +410,7 @@
   log can be found in the `*llm log*' buffer.
 
 
-4.3 How to handle conversations
+5.3 How to handle conversations
 ───────────────────────────────
 
   Conversations can take place by repeatedly calling `llm-chat' and its
@@ -406,7 +437,7 @@
   └────
 
 
-4.4 Caution about `llm-chat-prompt-interactions'
+5.4 Caution about `llm-chat-prompt-interactions'
 ────────────────────────────────────────────────
 
   The interactions in a prompt may be modified by conversation or by the
@@ -423,7 +454,7 @@
   wouldn't work for all providers.
 
 
-4.5 Function calling
+5.5 Function calling
 ────────────────────
 
   *Note: function calling functionality is currently alpha quality.  If
@@ -491,7 +522,7 @@
 [discussions] <https://github.com/ahyatt/llm/discussions>
 
 
-4.6 Advanced prompt creation
+5.6 Advanced prompt creation
 ────────────────────────────
 
   The `llm-prompt' module provides helper functions to create prompts
@@ -630,7 +661,7 @@
 [ekg] <https://github.com/ahyatt/ekg>
 
 
-5 Contributions
+6 Contributions
 ═══════════════
 
   If you are interested in creating a provider, please send a pull
