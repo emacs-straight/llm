@@ -109,7 +109,17 @@
     if you wanted to do that, just use `make-llm-openai' instead.
 
 
-2.3 Gemini (not via Google Cloud)
+2.3 Azure's Open AI
+───────────────────
+
+  Microsoft Azure has an Open AI integration, although it doesn't
+  support everything Open AI does, such as function calling.  You can
+  set it up with `make-llm-azure', with the following parameter:
+  • `:url', the endpoint URL, such as
+    "<https://docs-test-001.openai.azure.com/>".
+
+
+2.4 Gemini (not via Google Cloud)
 ─────────────────────────────────
 
   This is Google's AI model.  You can get an API key via their [page on
@@ -127,7 +137,7 @@
 [page on Google AI Studio] <https://makersuite.google.com/app/apikey>
 
 
-2.4 Vertex (Gemini via Google Cloud)
+2.5 Vertex (Gemini via Google Cloud)
 ────────────────────────────────────
 
   This is mostly for those who want to use Google Cloud specifically,
@@ -165,7 +175,7 @@
 <https://cloud.google.com/vertex-ai/docs/generative-ai/embeddings/get-text-embeddings#supported_models>
 
 
-2.5 Claude
+2.6 Claude
 ──────────
 
   [Claude] is Anthropic's large language model.  It does not support
@@ -184,7 +194,7 @@
 [Claude models] <https://docs.anthropic.com/claude/docs/models-overview>
 
 
-2.6 Ollama
+2.7 Ollama
 ──────────
 
   [Ollama] is a way to run large language models locally. There are
@@ -209,7 +219,7 @@
 [many different models] <https://ollama.ai/library>
 
 
-2.7 GPT4All
+2.8 GPT4All
 ───────────
 
   [GPT4All] is a way to run large language models locally.  To use it
@@ -229,7 +239,7 @@
 [GPT4All] <https://gpt4all.io/index.html>
 
 
-2.8 llama.cpp
+2.9 llama.cpp
 ─────────────
 
   [llama.cpp] is a way to run large language models locally.  To use it
@@ -248,8 +258,8 @@
 [llama.cpp] <https://github.com/ggerganov/llama.cpp>
 
 
-2.9 Fake
-────────
+2.10 Fake
+─────────
 
   This is a client that makes no call, but it just there for testing and
   debugging.  Mostly this is of use to programmatic clients of the llm
