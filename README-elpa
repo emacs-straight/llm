@@ -376,6 +376,13 @@
     asynchronously. `vector-callback' is called with the vector
     embedding, and, in case of error, `error-callback' is called with
     the same arguments as in `llm-chat-async'.
+  • `llm-batch-embedding provider strings': same as `llm-embedding', but
+    takes in a list of strings, and returns a list of vectors whose
+    order corresponds to the ordering of the strings.
+  • `llm-batch-embedding-async provider strings vectors-callback
+    error-callback': same as `llm-embedding-async', but takes in a list
+    of strings, and returns a list of vectors whose order corresponds to
+    the ordering of the strings.
   • `llm-count-tokens provider string': Count how many tokens are in
     `string'.  This may vary by `provider', because some provideres
     implement an API for this, but typically is always about the same.
