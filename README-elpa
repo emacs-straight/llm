@@ -19,19 +19,25 @@
   compatibility regardless of whether the user has a local LLM or is
   paying for API access.
 
-  LLMs exhibit varying functionalities and APIs. This library aims to
-  abstract functionality to a higher level, as some high-level concepts
-  might be supported by an API while others require more low-level
-  implementations. An example of such a concept is "examples," where the
-  client offers example interactions to demonstrate a pattern for the
-  LLM. While the GCloud Vertex API has an explicit API for examples,
-  OpenAI's API requires specifying examples by modifying the system
-  prompt. OpenAI also introduces the concept of a system prompt, which
-  does not exist in the Vertex API. Our library aims to conceal these
-  API variations by providing higher-level concepts in our API.
+  This library abstracts several kinds of features:
+  • Chat functionality: the ability to query the LLM and get a response,
+    and continue to take turns writing to the LLM and receiving
+    responses.  The library supports both synchronous, asynchronous, and
+    streaming responses.
+  • Chat with image and other kinda of media inputs are also supported,
+    so that the user can input images and discuss them with the LLM.
+  • Function calling (aka "tool use") is supported, for having the LLM
+    call elisp functions that it chooses, with arguments it provides.
+  • Embeddings: Send text and receive a vector that encodes the semantic
+    meaning of the underlying text.  Can be used in a search system to
+    find similar passages.
+  • Prompt construction: Create a prompt to give to an LLM from one more
+    sources of data.
 
   Certain functionalities might not be available in some LLMs. Any such
-  unsupported functionality will raise a `'not-implemented' signal.
+  unsupported functionality will raise a `'not-implemented' signal, or
+  it may fail in some other way.  Clients are recommended to check
+  `llm-capabilities' when trying to do something beyond basic text chat.
 
 
 2 Setting up providers
@@ -84,7 +90,7 @@
     AI's APIs.  Remember to keep this private.  This is non-optional.
   • `:chat-model': A model name from the [list of Open AI's model
     names.]  Keep in mind some of these are not available to everyone.
-    This is optional, and will default to a reasonable 3.5 model.
+    This is optional, and will default to a reasonable model.
   • `:embedding-model': A model name from [list of Open AI's embedding
     model names.]  This is optional, and will default to a reasonable
     model.
@@ -117,6 +123,10 @@
   set it up with `make-llm-azure', with the following parameter:
   • `:url', the endpoint URL, such as
     "<https://docs-test-001.openai.azure.com/>".
+  • `:key', the Azure key for Azure OpenAI service.
+  • `:chat-model', the chat model, which must be deployed in Azure.
+  • `embedding-model', the embedding model which must be deployed in
+    Azure.
 
 
 2.4 Gemini (not via Google Cloud)
@@ -474,7 +484,7 @@
 5.5 Function calling
 ────────────────────
 
-  *Note: function calling functionality is currently alpha quality.  If
+  *Note: function calling functionality is currently beta quality.  If
    you want to use function calling, please watch the `llm'
    [discussions] for any announcements about changes.*
 
@@ -539,7 +549,25 @@
 [discussions] <https://github.com/ahyatt/llm/discussions>
 
 
-5.6 Advanced prompt creation
+5.6 Media input
+───────────────
+
+  *Note: media input functionality is currently alpha quality.  If you
+   want to use it, please watch the `llm' [discussions] for any
+   announcements about changes.*
+
+  Media can be used in `llm-chat' and related functions.  To use media,
+  you can use `llm-multipart' in `llm-make-chat-prompt', and pass it an
+  Emacs image or an `llm-media' object for other kinds of media.
+  Besides images, some models support video and audio.  Not all
+  providers or models support these, with images being the most
+  frequently supported media type, and video and audio more rare.
+
+
+[discussions] <https://github.com/ahyatt/llm/discussions>
+
+
+5.7 Advanced prompt creation
 ────────────────────────────
 
   The `llm-prompt' module provides helper functions to create prompts
