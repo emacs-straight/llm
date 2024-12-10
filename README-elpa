@@ -149,15 +149,16 @@
   Google AI Studio].  Set this up with `make-llm-gemini', with the
   following parameters:
   • `:key', the Google AI key that you get from Google AI Studio.
-  • `:chat-model', the model name, from the
-    [[<https://ai.google.dev/models>][list of models.  This is optional
-    and will default to the text Gemini model.
+  • `:chat-model', the model name, from the [list] of models.  This is
+    optional and will default to the text Gemini model.
   • `:embedding-model': the model name, currently must be
     "embedding-001".  This is optional and will default to
     "embedding-001".
 
 
 [page on Google AI Studio] <https://makersuite.google.com/app/apikey>
+
+[list] <https://ai.google.dev/models>
 
 
 2.5 Vertex (Gemini via Google Cloud)
