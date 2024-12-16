@@ -123,6 +123,11 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
     :regex "claude-3-haiku")
    ;; https://ai.google.dev/gemini-api/docs/models/gemini
    (make-llm-model
+    :name "Gemini 2.0 Flash" :symbol 'gemini-2.0-flash
+    :capabilities '(generation tool-use image-input audio-input video-input)
+    :context-length 1048576
+    :regex "gemini-2\\.0-flash")
+   (make-llm-model
     :name "Gemini 1.5 Flash" :symbol 'gemini-1.5-flash
     :capabilities '(generation tool-use image-input audio-input video-input)
     :context-length 1048576
@@ -164,6 +169,16 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
     :capabilities '(generation tool-use)
     :context-length 128000
     :regex "llama-?3\\.2")
+   (make-llm-model
+    :name "Llama 3.3" :symbol 'llama-3.3
+    :capabilities '(generation tool-use)
+    :context-length 128000
+    :regex "llama-?3\\.3")
+   (make-llm-model
+    :name "qwq" :symbol 'qwq
+    :capabilities '(generation tool-use)
+    :context-length 32768
+    :regex "qwq")
    (make-llm-model
     :name "Gemma 2" :symbol 'gemma-2
     :capabilities '(generation free-software)  ;; Apache license
