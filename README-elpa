@@ -338,7 +338,7 @@
   hand, by use of the `llm' package, the user can make sure that any
   client that codes against it will work with free models that come
   along.  It's likely that sophisticated free LLMs will, emerge,
-  although it's unclear right now what free software means with respsect
+  although it's unclear right now what free software means with respect
   to LLMs.  Because of this tradeoff, we have decided to warn the user
   when using non-free LLMs (which is every LLM supported right now
   except the fake one).  You can turn this off the same way you turn off
