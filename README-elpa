@@ -313,13 +313,11 @@
 
   ┌────
   │ (require 'llm-models)
-  │ (add-to-list
-  │  'llm-models
-  │  (make-llm-model
-  │   :name "Mistral" :symbol 'mistral
-  │   :capabilities '(generation tool-use free-software)
-  │   :context-length 8192
-  │   :regex "mistral"))
+  │ (llm-models-add
+  │  :name "Mistral" :symbol 'mistral
+  │  :capabilities '(generation tool-use free-software)
+  │  :context-length 8192
+  │  :regex "mistral"))
   └────
 
   The `:regex' needs to uniquely identify the model passed in from a
