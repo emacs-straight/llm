@@ -5,7 +5,7 @@
 ;; Author: Andrew Hyatt <ahyatt@gmail.com>
 ;; Homepage: https://github.com/ahyatt/llm
 ;; Package-Requires: ((emacs "28.1") (plz "0.8") (plz-event-source "0.1.1") (plz-media-type "0.2.1"))
-;; Package-Version: 0.22.0
+;; Package-Version: 0.23.0
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;
 ;; This program is free software; you can redistribute it and/or
@@ -300,12 +300,12 @@ usually turned into part of the interaction, and if so, they will
 be put in the first interaction of the prompt (before anything in
 PREVIOUS-INTERACTIONS).
 
-NON-STANDARD-PARAMS is an alist of other options that the
-provider may or may not know how to handle.  These are expected
-to be provider specific.  Don't use this if you want the prompt
-to be used amongst different providers, because it is likely to
-cause a request error.  The cars of the alist are strings and the
-cdrs can be strings or numbers.  This is optional."
+NON-STANDARD-PARAMS is an alist of other options that the provider may
+or may not know how to handle.  These are expected to be provider
+specific.  Don't use this if you want the prompt to be used amongst
+different providers, because it is likely to cause a request error.  The
+cars of the alist are strings and the cdrs can be strings, numbers or
+vectors (if a list).  This is optional."
   (unless content
     (error "CONTENT is required"))
   (when (and (listp content) (zerop (mod (length content) 2)))
