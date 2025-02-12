@@ -598,21 +598,27 @@
   format.  An example is:
 
   ┌────
-  │ (llm-chat-async my-llm-provider (llm-make-chat-prompt
-  │    "What is the capital of France?"
-  │    :tools
-  │    (list (llm-make-tool
-  │ 	  :function (lambda (callback result)
-  │ 		      ;; In this example function the assumption is that the
-  │ 		      ;; callback will be called after processing the result is
-  │ 		      ;; complete.
-  │ 		      (notify-user-of-capital result callback))
-  │ 	  :name "capital_of_country"
-  │ 	  :description "Get the capital of a country."
-  │ 	  :args '((:name "country"
-  │ 		   :description "The country whose capital to look up."
-  │ 		   :type string))
-  │ 	  :async t))))
+  │ (llm-chat-async
+  │  my-llm-provider
+  │  (llm-make-chat-prompt
+  │   "What is the capital of France?"
+  │   :tools
+  │   (list (llm-make-tool
+  │ 	 :function
+  │ 	 (lambda (callback result)
+  │ 	   ;; In this example function the assumption is that the
+  │ 	   ;; callback will be called after processing the result is
+  │ 	   ;; complete.
+  │ 	   (notify-user-of-capital result callback))
+  │ 	 :name "capital_of_country"
+  │ 	 :description "Get the capital of a country."
+  │ 	 :args '((:name "country"
+  │ 			:description "The country whose capital to look up."
+  │ 			:type string))
+  │ 	 :async t)))
+  │  #'identity  ;; No need to process the result in this example.
+  │  (lambda (_ err)
+  │    (error "Error on getting capital: %s" err)))
   └────
 
   Note that tools have the same arguments and structure as the tool
