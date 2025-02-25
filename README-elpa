@@ -394,20 +394,21 @@
 5.1 Main functions
 ──────────────────
 
-  • `llm-chat provider prompt': With user-chosen `provider' , and a
-    `llm-chat-prompt' structure (created by `llm-make-chat-prompt'),
-    send that prompt to the LLM and wait for the string output.
-  • `llm-chat-async provider prompt response-callback error-callback':
-    Same as `llm-chat', but executes in the background.  Takes a
-    `response-callback' which will be called with the text response.
-    The `error-callback' will be called in case of error, with the error
-    symbol and an error message.
+  • `llm-chat provider prompt multi-output': With user-chosen `provider'
+    , and a `llm-chat-prompt' structure (created by
+    `llm-make-chat-prompt'), send that prompt to the LLM and wait for
+    the string output.
+  • `llm-chat-async provider prompt response-callback error-callback
+    multi-output': Same as `llm-chat', but executes in the background.
+    Takes a `response-callback' which will be called with the text
+    response.  The `error-callback' will be called in case of error,
+    with the error symbol and an error message.
   • `llm-chat-streaming provider prompt partial-callback
-    response-callback error-callback': Similar to `llm-chat-async', but
-    request a streaming response.  As the response is built up,
-    `partial-callback' is called with the all the text retrieved up to
-    the current point.  Finally, `reponse-callback' is called with the
-    complete text.
+    response-callback error-callback multi-output': Similar to
+    `llm-chat-async', but request a streaming response.  As the response
+    is built up, `partial-callback' is called with the all the text
+    retrieved up to the current point.  Finally, `reponse-callback' is
+    called with the complete text.
   • `llm-embedding provider string': With the user-chosen `provider',
     send a string and get an embedding, which is a large vector of
     floating point values.  The embedding represents the semantic
@@ -468,7 +469,30 @@
       is optional, and defaults to `'user'.
 
 
-5.1.1 JSON schema
+5.1.1 Return and multi-output
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  The default return value is text except for when tools are called, in
+  which case it is a record of the return values of the tools called.
+
+  Models can potentially return many types of information, though, so
+  the `multi-output' option was added to the `llm-chat' calls so that
+  the single return value can instead be a plist that represents the
+  various possible values.  In the case of `llm-chat', this plist is
+  returned, in `llm-chat-async', it is passed to the success function.
+  In `llm-chat-streaming', it is passed to the success function, and
+  each partial update will be a plist, with no guarantee that the same
+  keys will always be present.
+
+  The possible plist keys are:
+  • `:text' , for the main textual output.
+  • `:reasoning', for reasoning output, when the model separates it.
+  • `:tool-uses', the tools that the llm identified to be called, as a
+    list of plists, with `:name' and `:args' values.
+  • `:tool-results', the results of calling the tools.
+
+
+5.1.2 JSON schema
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   By using the `response-format' argument to `llm-make-chat-prompt', you
