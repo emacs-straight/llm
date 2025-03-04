@@ -455,6 +455,10 @@
     functions.
   • `llm-name provider'.  Provides a short name of the model or
     provider, suitable for showing to users.
+  • `llm-models provider'.  Return a list of all the available model
+    names for the provider.  This could be either embedding or chat
+    models.  You can use `llm-models-match' to filter on models that
+    have a certain capability (as long as they are in `llm-models').
   • `llm-chat-token-limit'.  Gets the token limit for the chat model.
     This isn't possible for some backends like `llama.cpp', in which the
     model isn't selected or known by this library.

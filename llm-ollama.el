@@ -29,6 +29,7 @@
 (require 'llm)
 (require 'llm-provider-utils)
 (require 'llm-models)
+(require 'plz)
 (require 'json)
 (require 'plz-media-type)
 
@@ -179,7 +180,12 @@ PROVIDER is the llm-ollama provider."
       (setq options (plist-put options :temperature (llm-chat-prompt-temperature prompt))))
     (when (llm-chat-prompt-max-tokens prompt)
       (setq options (plist-put options :num_predict (llm-chat-prompt-max-tokens prompt))))
-    (setq options (append options (llm-provider-utils-non-standard-params-plist prompt)))
+    (when-let* ((more-options-plist (llm-provider-utils-non-standard-params-plist prompt)))
+      (when-let* ((keep-alive (plist-get more-options-plist :keep_alive)))
+        (setq request-plist (plist-put request-plist :keep_alive keep-alive)))
+      (setq options (append options
+                            (map-filter (lambda (key _) (not (equal key :keep_alive)))
+                                        more-options-plist))))
     (when options
       (setq request-plist (plist-put request-plist :options options)))
     request-plist))
@@ -229,7 +235,7 @@ PROVIDER is the llm-ollama provider."
                                         2048))
 
 (cl-defmethod llm-capabilities ((provider llm-ollama))
-  (append '(streaming json-response)
+  (append '(streaming json-response model-list)
           (when (and (llm-ollama-embedding-model provider)
                      (let ((embedding-model (llm-models-match
                                              (llm-ollama-embedding-model provider))))
@@ -242,6 +248,14 @@ PROVIDER is the llm-ollama provider."
             (append
              (when (member 'tool-use capabilities) '(tool-use))
              (seq-intersection capabilities '(image-input))))))
+
+(cl-defmethod llm-models ((provider llm-ollama))
+  (mapcar (lambda (model-data)
+            (plist-get model-data :name))
+          (plist-get (plz 'get (llm-ollama--url provider "tags")
+                       :as (lambda ()
+                             (json-parse-buffer :object-type 'plist)))
+                     :models )))
 
 (provide 'llm-ollama)
 
