@@ -292,8 +292,18 @@
 [some models] <https://ollama.com/search?q=&c=embedding>
 
 
-3.9 Deepseek
-────────────
+3.9 Ollama (authed)
+───────────────────
+
+  This is a variant of the Ollama provider, which is set up with the
+  same parameters plus:
+  • `:key': The authentication key of the provider.
+
+  The key is used to send a standard `Authentication' header.
+
+
+3.10 Deepseek
+─────────────
 
   [Deepseek] is a company offers both reasoning and chat high-quality
   models.  This provider connects to their server.  It is also possible
@@ -311,7 +321,7 @@
 [model list.] <https://api-docs.deepseek.com/quick_start/pricing>
 
 
-3.10 GPT4All
+3.11 GPT4All
 ────────────
 
   [GPT4All] is a way to run large language models locally.  To use it
@@ -331,7 +341,7 @@
 [GPT4All] <https://gpt4all.io/index.html>
 
 
-3.11 llama.cpp
+3.12 llama.cpp
 ──────────────
 
   [llama.cpp] is a way to run large language models locally.  To use it
@@ -350,7 +360,7 @@
 [llama.cpp] <https://github.com/ggerganov/llama.cpp>
 
 
-3.12 Fake
+3.13 Fake
 ─────────
 
   This is a client that makes no call, but it just there for testing and
