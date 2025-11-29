@@ -148,7 +148,7 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
    ;; https://docs.anthropic.com/en/docs/about-claude/models
    (make-llm-model
     :name "Claude 4.5 Sonnet" :symbol 'claude-4.5-sonnet
-    :capabilities '(generation tool-use image-input pdf-input caching)
+    :capabilities '(generation tool-use image-input pdf-input caching json-response)
     :context-length 200000
     :regex "claude-sonnet-4-5")
    (make-llm-model
@@ -157,8 +157,13 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
     :context-length 200000
     :regex "claude-haiku-4-5")
    (make-llm-model
+    :name "Claude 4.5 Opus" :symbol 'claude-4-5-opus
+    :capabilities '(generation tool-use image-input pdf-input caching json-response)
+    :context-length 200000
+    :regex "claude-opus-4-5")
+   (make-llm-model
     :name "Claude 4.1 Opus" :symbol 'claude-4-1-opus
-    :capabilities '(generation tool-use image-input pdf-input caching)
+    :capabilities '(generation tool-use image-input pdf-input caching json-response)
     :context-length 200000
     :regex "claude-opus-4-1")
    (make-llm-model
@@ -224,6 +229,12 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
                                pdf-input caching reasoning)
     :context-length 1048576
     :regex "gemini-2\\.5-flash$")
+   (make-llm-model
+    :name "Gemini 3 Pro" :symbol 'gemini-3-pro
+    :capabilities '(generation tool-use image-input audio-input video-input json-response
+                               pdf-input caching reasoning)
+    :context-length 1048576
+    :regex "gemini-3-pro")
    (make-llm-model
     :name "Gemini 2.0 Pro" :symbol 'gemini-2.0-pro
     :capabilities '(generation tool-use image-input audio-input video-input)
