@@ -112,46 +112,12 @@ PROVIDER is the llm-ollama provider."
 (cl-defmethod llm-provider-batch-embeddings-extract-result ((_ llm-ollama) response)
   (append (assoc-default 'embeddings response) nil))
 
-(eval-and-compile
-  (defconst llm-ollama-reasoning-tags '("think" "reasoning")
-    "A list of possibilities for reasoning tags in Ollama responses.
-
-These are just the text inside the tag, not the tag itself."))
-
 (cl-defmethod llm-provider-chat-extract-result ((_ llm-ollama) response)
   "Return the chat response from the server RESPONSE."
-  (let ((raw-result (assoc-default 'content (assoc-default 'message response))))
-    ;; The raw result may have reasoning content in, which is in <think> tags
-    ;; (for DeepSeek reasoning).  We want to strip that out.
-    (with-temp-buffer
-      (insert raw-result)
-      (goto-char 0)
-      (if (seq-find (lambda (tag)
-                      (search-forward (format "</%s>" tag) nil t))
-                    llm-ollama-reasoning-tags)
-          (string-trim (buffer-substring (point) (point-max)))
-        raw-result))))
+  (assoc-default 'content (assoc-default 'message response)))
 
 (cl-defmethod llm-provider-extract-reasoning ((_ llm-ollama) response)
-  (let ((raw-result (assoc-default 'content (assoc-default 'message response))))
-    ;; Reasoning content is in <think> tags (for DeepSeek reasoning).  We want to
-    ;; extract the content between these tags.
-    (with-temp-buffer
-      (insert raw-result)
-      (goto-char 0)
-      (when (re-search-forward
-             (rx (seq (literal "<")
-                      (group (eval `(or ,@llm-ollama-reasoning-tags)))
-                      (literal ">")))
-             nil t)
-        (when-let* ((end (save-excursion
-                           (re-search-forward
-                            (rx (seq
-                                 (literal "</")
-                                 (group (literal (match-string 1)))
-                                 (literal ">"))) nil t))))
-          ;; +3 to account for the length of the two brackets and slash
-          (buffer-substring (point) (- end (+ 3 (length (match-string 1))))))))))
+  (assoc-default 'thinking (assoc-default 'message response)))
 
 (defun llm-ollama--response-format (format)
   "Return the response format for FORMAT."
@@ -163,26 +129,52 @@ These are just the text inside the tag, not the tag itself."))
   (llm-provider-utils-combine-to-system-prompt prompt llm-ollama-example-prelude)
   (let (request-plist messages options)
     (setq messages
-          (vconcat (mapcar (lambda (interaction)
+          (vconcat (mapcan (lambda (interaction)
                              (let* ((role (llm-chat-prompt-interaction-role interaction))
                                     (content (llm-chat-prompt-interaction-content interaction))
-                                    (content-text "")
+                                    (tool-results (llm-chat-prompt-interaction-tool-results interaction))
+                                    (tool-call-p (and (listp content)
+                                                      (llm-provider-utils-tool-use-p (car content))))
                                     (images nil))
-                               (if (stringp content)
-                                   (setq content-text content)
-                                 (if (eq 'user role)
-                                     (dolist (part (llm-multipart-parts content))
-                                       (if (llm-media-p part)
-                                           (setq images (append images (list part)))
-                                         (setq content-text (concat content-text part))))
-                                   (setq content-text (json-serialize content))))
-                               (append
-                                `(:role ,(symbol-name role)
-                                        :content ,content-text)
-                                (when images
-                                  `(:images
-                                    ,(vconcat (mapcar (lambda (img) (base64-encode-string (llm-media-data img) t))
-                                                      images)))))))
+                               ;; Tool results expand to one tool line per
+                               ;; result, so multiple lines per this
+                               ;; interaction.
+                               (if tool-results
+                                   (mapcar (lambda (r)
+                                             `(:role "tool"
+                                                     :tool_name ,(llm-chat-prompt-tool-result-tool-name r)
+                                                     :content ,(llm-chat-prompt-tool-result-result r)))
+                                           tool-results)
+                                 (list (append
+                                        `(:role
+                                          ,(symbol-name role)
+                                          ,(if tool-call-p :tool_calls :content)
+                                          ,(cond
+                                            ((stringp content) content)
+                                            (tool-call-p
+                                             (cl-loop for tool in content
+                                                      and index from 0
+                                                      vconcat
+                                                      `((:type "function"
+                                                               :function
+                                                               (:index ,index
+                                                                       :name
+                                                                       ,(llm-provider-utils-tool-use-name tool)
+                                                                       :arguments
+                                                                       ,(llm-provider-utils-tool-use-args tool))))))
+                                            ((llm-multipart-p content)
+                                             (cl-loop for part in (llm-multipart-parts content) do
+                                                      (when (llm-media-p part)
+                                                        (setq images (append images (list part))))
+                                                      concat
+                                                      (if (llm-media-p part)
+                                                          ""
+                                                        part)))
+                                            (t (json-serialize content))))
+                                        (when images
+                                          `(:images
+                                            ,(vconcat (mapcar (lambda (img) (base64-encode-string (llm-media-data img) t))
+                                                              images)))))))))
                            (llm-chat-prompt-interactions prompt))))
     (setq request-plist (plist-put request-plist :messages messages))
     (setq request-plist (plist-put request-plist :model (llm-ollama-chat-model provider)))
@@ -225,46 +217,33 @@ These are just the text inside the tag, not the tag itself."))
           (assoc-default 'tool_calls (assoc-default 'message response))))
 
 (cl-defmethod llm-provider-populate-tool-uses ((_ llm-ollama) prompt tool-uses)
-  (llm-provider-utils-append-to-prompt
-   prompt
-   (vconcat (mapcar (lambda (tool-use)
-                      `(:function (:name ,(llm-provider-utils-tool-use-name tool-use)
-                                         :arguments ,(json-serialize
-                                                      (llm-provider-utils-tool-use-args tool-use)
-                                                      :false-object :json-false))))
-                    tool-uses))))
+  (llm-provider-utils-append-to-prompt prompt tool-uses))
 
 (cl-defmethod llm-provider-streaming-media-handler ((_ llm-ollama) receiver _)
   (cons 'application/x-ndjson
         (plz-media-type:application/x-ndjson
-         :handler (let ((in-reasoning))
-                    (lambda (data)
-                      (let* ((message (assoc-default 'message data))
-                             (text (assoc-default 'content message))
-                             (tool-call (assoc-default 'tool_calls message))
-                             (response nil))
-                        (when (and text (> (length text) 0))
-                          ;; The response from ollama should just have the tag and
-                          ;; nothing more.
-                          (cond
-                           ((string-match (rx
-                                           (seq "<"
-                                                (eval `(or ,@llm-ollama-reasoning-tags))
-                                                ">")) text)
-                            (setq in-reasoning t))
-                           ((string-match (rx
-                                           (seq "</"
-                                                (eval `(or ,@llm-ollama-reasoning-tags))
-                                                ">")) text)
-                            (setq in-reasoning nil))
-                           (t
-                            (setq response
-                                  (plist-put response (if in-reasoning :reasoning :text) text)))))
-                        (when tool-call
-                          (setq response
-                                (plist-put response :tool-uses-raw
-                                           (aref tool-call 0))))
-                        (funcall receiver response)))))))
+         :handler (lambda (data)
+                    (let* ((message (assoc-default 'message data))
+                           (text (assoc-default 'content message))
+                           (reasoning (assoc-default 'thinking message))
+                           (tool-call (assoc-default 'tool_calls message))
+                           (response nil))
+                      (when reasoning
+                        (setq response
+                              (plist-put response :reasoning
+                                         (concat
+                                          (or (plist-get response :reasoning) "")
+                                          reasoning))))
+                      (when text
+                        (setq response
+                              (plist-put response :text (concat
+                                                         (or (plist-get response :text) "")
+                                                         text))))
+                      (when tool-call
+                        (setq response
+                              (plist-put response :tool-uses-raw
+                                         (aref tool-call 0))))
+                      (funcall receiver response))))))
 
 (cl-defmethod llm-provider-collect-streaming-tool-uses ((_ llm-ollama) data)
   ;; Ollama only supports one tool used at a time.
