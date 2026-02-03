@@ -2,6 +2,7 @@
 ════════════════
 
   • Check for tool use mismatches and define new errors for them
+  • Normalize false values in tool args or tool call results
 
 
 2 Version 0.28.5
@@ -172,11 +173,4 @@
 
   • Change `llm-tool-function' to `llm-tool', change
     `make-llm-tool-function' to take any arguments.
-
-
-20 Version 0.21.0
-═════════════════
-
-  • Incompatible change to function calling, which is now tool use,
-    affecting arguments and methods.
   …  …
