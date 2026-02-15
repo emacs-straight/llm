@@ -1,2 +1,2 @@
-;; Generated package description from llm.el  -*- mode: lisp-data; no-byte-compile: t -*-
-(define-package "llm" "0.28.5.0.20260210.111841" "Interface to pluggable llm backends" '((emacs "28.1") (plz "0.8") (plz-event-source "0.1.1") (plz-media-type "0.2.1") (compat "29.1")) :commit "8b95d3c914022f0cac2116e0aea7d6edb746ea56" :authors '(("Andrew Hyatt" . "ahyatt@gmail.com")) :maintainer '("Andrew Hyatt" . "ahyatt@gmail.com") :url "https://github.com/ahyatt/llm")
+;; Generated package description from llm.el  -*- mode: lisp-data; no-byte-compile: t; lexical-binding:t -*-
+(define-package "llm" "0.28.5.0.20260214.140338" "Interface to pluggable llm backends" '((emacs "28.1") (plz "0.8") (plz-event-source "0.1.1") (plz-media-type "0.2.1") (compat "29.1")) :commit "16c5fa7bdc4a68f9fd02b6571ac5d206722c4f8b" :authors '(("Andrew Hyatt" . "ahyatt@gmail.com")) :maintainer '("Andrew Hyatt" . "ahyatt@gmail.com") :url "https://github.com/ahyatt/llm")
