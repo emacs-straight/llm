@@ -6,6 +6,10 @@
   • Add Claude Opus 4.6
   • Fix bug running two async calls in parallel
   • Set Gemini default to 3.0 pro
+  • Added Kimi k2.5, GLM-5, and Qwen 3 Coder Next
+  • Increased the default context length for unknown models to be more
+    up to date
+  • Allow Ollama authed keys to be functions
 
 
 2 Version 0.28.5
@@ -162,11 +166,4 @@
 ═════════════════
 
   • Add GitHub's GitHub Models
-  • Accept lists as nonstandard
-  • Add Deepseek R1 model
-  • Show the chat model as the name for Open-AI compatible models (via
-    [@whhone])
   …  …
-
-
-[@whhone] <https://github.com/whhone>

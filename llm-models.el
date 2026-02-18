@@ -1,6 +1,6 @@
 ;;; llm-models.el --- Specification of model capabilities -*- lexical-binding: t; package-lint-main-file: "llm.el" -*-
 
-;; Copyright (c) 2024-2025  Free Software Foundation, Inc.
+;; Copyright (c) 2024-2026  Free Software Foundation, Inc.
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -369,6 +369,11 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
     :context-length 128000
     :regex "qwen-?2\\.5")
    (make-llm-model
+    :name "Qwen 3 Coder Next" :symbol 'qwen-3-coder-next
+    :capabilities '(generation tool-use free-software)  ;; Apache 2 license
+    :context-length 256000
+    :regex "qwen-?3-coder-next")
+   (make-llm-model
     :name "Qwen 3" :symbol 'qwen-3
     :capabilities '(generation tool-use)  ;; Apache license for some variations only
     :context-length 32000
@@ -387,7 +392,17 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
     :name "gpt-oss" :symbol 'gpt-oss
     :capabilities '(generation free-software reasoning tool-use) ; Apache license
     :context-length 128000
-    :regex "gpt-oss")))
+    :regex "gpt-oss")
+   (make-llm-model
+    :name "Kimi K2.5" :symbol 'kimi-k2.5
+    :capabilities '(generation free-software reasoning tool-use) ; Modified MIT license
+    :context-length 256000
+    :regex "kimi-k2\\.5")
+   (make-llm-model
+    :name "glm-5" :symbol 'glm-5
+    :capabilities '(generation free-software reasoning tool-use) ; Apache license
+    :context-length 200000
+    :regex "glm-5")))
 
 (defun llm-models-by-symbol (symbol)
   "Return the model with SYMBOL."

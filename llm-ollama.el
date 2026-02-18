@@ -1,6 +1,6 @@
 ;;; llm-ollama.el --- llm module for integrating with Ollama. -*- lexical-binding: t; package-lint-main-file: "llm.el"; byte-compile-docstring-max-column: 200-*-
 
-;; Copyright (c) 2023-2025  Free Software Foundation, Inc.
+;; Copyright (c) 2023-2026  Free Software Foundation, Inc.
 
 ;; Author: Andrew Hyatt <ahyatt@gmail.com>
 ;; Homepage: https://github.com/ahyatt/llm
@@ -68,7 +68,11 @@ EMBEDDING-MODEL is the model to use for embeddings.  It is required."
   key)
 
 (cl-defmethod llm-provider-headers ((provider llm-ollama-authed))
-  `(("Authorization" . ,(format "Bearer %s" (encode-coding-string (llm-ollama-authed-key provider) 'utf-8)))))
+  `(("Authorization" . ,(format "Bearer %s" (encode-coding-string
+                                             (if (functionp (llm-ollama-authed-key provider))
+                                                 (funcall (llm-ollama-authed-key provider))
+                                               (llm-ollama-authed-key provider))
+                                             'utf-8)))))
 
 ;; Ollama's models may or may not be free, we have no way of knowing.  There's no
 ;; way to tell, and no ToS to point out here.
