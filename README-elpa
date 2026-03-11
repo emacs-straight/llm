@@ -550,6 +550,12 @@
   • `:tool-uses', the tools that the llm identified to be called, as a
     list of plists, with `:name' and `:args' values.
   • `:tool-results', the results of calling the tools.
+  • `:input-tokens', the number of input tokens, when available
+  • `:output-tokens', the number of output tokens, when available
+
+  The input and output token counts should be consistently available
+  per-provider, but not all providers support output tokens, and some
+  don't support either.
 
 
 6.1.2 JSON schema
