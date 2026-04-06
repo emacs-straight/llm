@@ -1,8 +1,13 @@
 1 Version 0.30.1
 ════════════════
 
-  • Add Claude Sonnet 4.6.
-  • Add support for Open AI compatible `reasoning_content' blocks.
+  • Add Claude Sonnet 4.6
+  • Add StepFun 3.5 Flash
+  • Add Gemma 4
+  • Add Gemini 3.1 Flash Lite
+  • Added OpenRouter as a top-level model type
+  • Add support for Open AI compatible `reasoning_content' and
+    `reasoning' blocks
 
 
 2 Version 0.30.0
@@ -168,6 +173,4 @@
     separating out reasoning, as well as optionally returning text as
     well as tool uses at the same time.
   • Added `llm-models' to get a list of models from a provider.
-  • Fix misnamed `llm-capabilities' output to refer to `tool-use' and
-    `streaming-tool-use' (which is new).
   …  …

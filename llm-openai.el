@@ -65,6 +65,13 @@ https://api.example.com/v1/chat, then URL should be
 \"https://api.example.com/v1/\"."
   url)
 
+(cl-defstruct (llm-openrouter (:include llm-openai-compatible
+                                        (url "https://openrouter.ai/api/v1/")))
+  "A structure for Open Router.
+
+This is mostly compatible with Open AI's API but has some minor API
+differences.")
+
 (cl-defmethod llm-nonfree-message-info ((_ llm-openai))
   "Return Open AI's nonfree terms of service."
   "https://openai.com/policies/terms-of-use")
@@ -170,9 +177,17 @@ PROVIDER is the Open AI provider struct."
                                            format)
                                           '(:additionalProperties :false))))))
 
-(defun llm-openai--build-model (provider)
-  "Get the model field for the request for PROVIDER."
+(cl-defgeneric llm-openai--build-model (provider)
+  "Get the model setting for the request for PROVIDER.")
+
+(cl-defmethod llm-openai--build-model ((provider llm-openai))
   (list :model (llm-openai-chat-model provider)))
+
+(cl-defmethod llm-openai--build-model ((provider llm-openrouter))
+  (let ((model (llm-openai-chat-model provider)))
+    (if (listp model)
+        (list :models (apply #'vector model))
+      (list :model model))))
 
 (defun llm-openai--build-streaming (streaming)
   "Add streaming field if STREAMING is non-nil."
@@ -339,7 +354,7 @@ STREAMING if non-nil, turn on response streaming."
 
 (cl-defmethod llm-provider-extract-tool-uses ((_ llm-openai) response)
   (mapcar (lambda (call)
-            (let ((tool (cdr (nth 2 call))))
+            (let ((tool (assoc-default 'function call)))
               (make-llm-provider-utils-tool-use
                :id (assoc-default 'id call)
                :name (assoc-default 'name tool)
@@ -354,8 +369,10 @@ STREAMING if non-nil, turn on response streaming."
 ;; Several Open AI compatible providers such as oMLX include a
 ;; "reasoning_content" field in the response.
 (cl-defmethod llm-provider-extract-reasoning ((_ llm-openai-compatible) response)
-  (assoc-default 'reasoning_content
-                 (assoc-default 'message (aref (cdr (assoc 'choices response)) 0))))
+  (when-let ((message (assoc-default 'message (aref (cdr (assoc 'choices response)) 0))))
+    (or
+     (assoc-default 'reasoning_content message)
+     (assoc-default 'reasoning message))))
 
 
 (cl-defmethod llm-provider-populate-tool-uses ((_ llm-openai) prompt tool-uses)

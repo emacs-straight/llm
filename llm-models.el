@@ -251,6 +251,12 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
     :context-length 1048576
     :regex "gemini-3-1-pro")
    (make-llm-model
+    :name "Gemini 3.1 Flash Lite" :symbol 'gemini-3-1-flash-lite
+    :capabilities '(generation tool-use image-input audio-input video-input json-response
+                               pdf-input caching reasoning)
+    :context-length 1048576
+    :regex "gemini-3\\.1-flash-lite")
+   (make-llm-model
     :name "Gemini 3 Pro" :symbol 'gemini-3-pro
     :capabilities '(generation tool-use image-input audio-input video-input json-response
                                pdf-input caching reasoning)
@@ -329,6 +335,11 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
     :capabilities '(generation free-software)  ;; Apache license
     :context-length 128000
     :regex "gemma-?3")
+   (make-llm-model
+    :name "Gemma 4" :symbol 'gemma-4
+    :capabilities '(generation free-software tool-use audio-input video-input reasoning)  ;; Apache license
+    :context-length 128000
+    :regex "gemma-?4")
    (make-llm-model
     :name "deepseek-r1" :symbol 'deepseek-r1
     :capabilities '(generation reasoning free-software)  ;; MIT license
@@ -429,6 +440,11 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
     :capabilities '(generation free-software reasoning tool-use) ; Modified MIT license
     :context-length 256000
     :regex "kimi-k2\\.5")
+   (make-llm-model
+    :name "StepFun 3.5 Flash" :symbol 'stepfun-3.5-flash
+    :capabilities '(generation reasoning tool-use)
+    :context-length 256000
+    :regex "step-3.5-flash")
    (make-llm-model
     :name "glm-5" :symbol 'glm-5
     :capabilities '(generation free-software reasoning tool-use) ; Apache license
