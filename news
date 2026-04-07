@@ -1,23 +1,23 @@
 1 Version 0.30.1
 ════════════════
 
-  • Add Claude Sonnet 4.6
-  • Add StepFun 3.5 Flash
-  • Add Gemma 4
-  • Add Gemini 3.1 Flash Lite
-  • Added OpenRouter as a top-level model type
-  • Add support for Open AI compatible `reasoning_content' and
-    `reasoning' blocks
+  • Fix lack of reasoning response when doing tool calls
 
 
 2 Version 0.30.0
 ════════════════
 
   • Add `:input-tokens' and `:output-tokens' to multioutput result.
-  • Added Qwen 3.5, LFM2 and LFM 2.5 Thinking
-  • Added Gemini 3.1 Pro
-  • Added Chat GPT 5.4, with extra context
   • Fixed inability of zero-arg tools to be called
+  • Added OpenRouter as a top-level model type
+  • Add support for Open AI compatible `reasoning_content' and
+    `reasoning' blocks
+  • Added Qwen 3.5, LFM2 and LFM 2.5 Thinking
+  • Added Gemini 3.1 Pro, Gemini 3.1 Flash Lite
+  • Added Chat GPT 5.4, with extra context
+  • Added StepFun 3.5 Flash
+  • Added Gemma 4
+  • Added Claude Sonnet 4.6
 
 
 3 Version 0.29.0
@@ -172,5 +172,4 @@
     call, or stream multiple kinds of data via a plist.  This allows
     separating out reasoning, as well as optionally returning text as
     well as tool uses at the same time.
-  • Added `llm-models' to get a list of models from a provider.
   …  …
