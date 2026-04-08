@@ -2,6 +2,8 @@
 ════════════════
 
   • Fix lack of reasoning response when doing tool calls
+  • Added support for Open AI compatible `reasoning_content' and
+    `reasoning' blocks for streaming
 
 
 2 Version 0.30.0
