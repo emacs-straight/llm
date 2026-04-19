@@ -3,6 +3,8 @@
 
   • Fix json encoding error caused by utf-8 strings for Open AI and
     Ollama
+  • Improved support for Open AI streaming for tool calls, by [Renato
+    Ferreira](<https://github.com/renatofdds>)
 
 
 2 Version 0.30.1
@@ -172,13 +174,4 @@
 
   • Fix issue with Ollama incorrect requests when passing non-standard
     params.
-
-
-20 Version 0.24.0
-═════════════════
-
-  • Add `multi-output' as an option, allowing all llm results to return,
-    call, or stream multiple kinds of data via a plist.  This allows
-    separating out reasoning, as well as optionally returning text as
-    well as tool uses at the same time.
   …  …
