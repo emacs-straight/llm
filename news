@@ -3,6 +3,7 @@
 
   • Fix json encoding error caused by utf-8 strings for Open AI and
     Ollama
+  • Add Kimi K2.6, Qwen 3.6 and Deepseek V4.
   • Improved support for Open AI streaming for tool calls, by [Renato
     Ferreira](<https://github.com/renatofdds>)
 
@@ -167,11 +168,4 @@
     be passed by giving a non-nil default.
   • Add Gemini 2.5 Pro
   • Fix issue with JSON return specs which pass booleans
-
-
-19 Version 0.24.1
-═════════════════
-
-  • Fix issue with Ollama incorrect requests when passing non-standard
-    params.
   …  …
