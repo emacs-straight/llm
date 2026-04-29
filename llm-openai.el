@@ -52,7 +52,7 @@ will use a reasonable default.
 
 EMBEDDING-MODEL is the model to use for embeddings.  If unset, it
 will use a reasonable default."
-  key (chat-model "gpt-4o") (embedding-model "text-embedding-3-small"))
+  key (chat-model "gpt-5.4-mini") (embedding-model "text-embedding-3-small"))
 
 (cl-defstruct (llm-openai-compatible (:include llm-openai
                                                (chat-model "unset")
@@ -121,7 +121,7 @@ PROVIDER is the Open AI provider struct."
   "Return the headers to use for a request from PROVIDER.")
 
 (cl-defmethod llm-openai--headers ((provider llm-openai))
-  (when-let ((key (llm-openai-key provider)))
+  (when-let* ((key (llm-openai-key provider)))
     ;; If the key is a function, call it.  The `auth-source' API uses functions
     ;; to wrap secrets and to obfuscate them in the Emacs heap.
     (when (functionp key)
@@ -219,7 +219,7 @@ PROVIDER is the Open AI provider struct."
 
 (defun llm-openai--build-tool-choice (prompt)
   "Build the tool_choice field if present in PROMPT."
-  (when-let ((options (llm-chat-prompt-tool-options prompt)))
+  (when-let* ((options (llm-chat-prompt-tool-options prompt)))
     (list :tool_choice
           (pcase (llm-tool-options-tool-choice options)
             ('auto "auto")
@@ -263,6 +263,44 @@ FCS is a list of `llm-provider-utils-tool-use' structs."
                                        (llm-provider-utils-tool-use-args fc)))))
            fcs)))
 
+(cl-defgeneric llm-openai--build-reasoning (provider prompt)
+  "Build the reasoning field for PROVIDER and PROMPT.")
+
+(defun llm-openai--parse-version (model)
+  "Parse the major and minor version from MODEL.
+
+If it cannot be parsed, return nil.  Otherwise, return a cons of (MAJOR
+. MINOR)."
+  (when (string-match "gpt-\\([0-9]+\\)\\.\\([0-9]+\\)" model)
+    (cons (string-to-number (match-string 1 model))
+          (string-to-number (match-string 2 model)))))
+
+(defun llm-openai--supports-reasoning (provider)
+  "Return non-nil if PROVIDER supports reasoning effort.
+
+The Open AI models have inconsistent and confusing support pre-5.2, so
+we need to check for a model post 5.2 (if it supports reasoning at all)."
+  (and (member 'reasoning (llm-capabilities provider))
+       (let* ((model (llm-openai-chat-model provider))
+              (major-minor (llm-openai--parse-version model)))
+         (or (>= (car major-minor) 6)
+             (and
+              (>= (car major-minor) 5)
+              (>= (cdr major-minor) 2))))))
+
+(cl-defmethod llm-openai--build-reasoning ((provider llm-openai) prompt)
+  (when (and (llm-chat-prompt-reasoning prompt)
+             (llm-openai--supports-reasoning provider))
+    (list :reasoning_effort
+          (pcase (llm-chat-prompt-reasoning prompt)
+            ('none "none")
+            ('light "low")
+            ('medium "medium")
+            ('maximum "xhigh")
+            (_ (signal 'llm-not-supported
+                       (list (format "Unknown reasoning effort option: %s"
+                                     (llm-chat-prompt-reasoning prompt)))))))))
+
 (defun llm-openai--build-messages (prompt)
   "Build the :messages field based on interactions in PROMPT."
   (let ((interactions (llm-chat-prompt-interactions prompt)))
@@ -277,7 +315,7 @@ FCS is a list of `llm-provider-utils-tool-use' structs."
            (list
             (let ((msg-plist
                    (list :role (symbol-name (llm-chat-prompt-interaction-role interaction)))))
-              (when-let ((content (llm-chat-prompt-interaction-content interaction)))
+              (when-let* ((content (llm-chat-prompt-interaction-content interaction)))
                 (if (and (consp content)
                          (llm-provider-utils-tool-use-p (car content)))
                     (setq msg-plist
@@ -331,6 +369,7 @@ STREAMING if non-nil, turn on response streaming."
           (append
            (llm-openai--build-model provider)
            (llm-openai--build-streaming streaming)
+           (llm-openai--build-reasoning provider prompt)
            (llm-openai--build-temperature prompt)
            (llm-openai--build-max-tokens prompt)
            (llm-openai--build-response-format prompt)
@@ -369,7 +408,7 @@ STREAMING if non-nil, turn on response streaming."
 ;; Several Open AI compatible providers such as oMLX include a
 ;; "reasoning_content" field in the response.
 (cl-defmethod llm-provider-extract-reasoning ((_ llm-openai-compatible) response)
-  (when-let ((message (assoc-default 'message (aref (cdr (assoc 'choices response)) 0))))
+  (when-let* ((message (assoc-default 'message (aref (cdr (assoc 'choices response)) 0))))
     (or
      (assoc-default 'reasoning_content message)
      (assoc-default 'reasoning message))))
@@ -395,12 +434,12 @@ STREAMING if non-nil, turn on response streaming."
 									 (reasoning (llm-provider-utils-json-val
 												 (or (assoc-default 'reasoning delta)
 													 (assoc-default 'reasoning_content delta)))))
-								 (when-let ((output (append
-													 (unless (string-empty-p reasoning) `(:text ,text))
-													 (when tool-calls `(:tool-uses-raw ,tool-calls))
-													 (unless (string-empty-p reasoning) `(:reasoning ,reasoning)))))
+								 (when-let* ((output (append
+													  (unless (string-empty-p reasoning) `(:text ,text))
+													  (when tool-calls `(:tool-uses-raw ,tool-calls))
+													  (unless (string-empty-p reasoning) `(:reasoning ,reasoning)))))
 								   (funcall receiver output))))
-                             (when-let ((usage (assoc-default 'usage response-alist)))
+                             (when-let* ((usage (assoc-default 'usage response-alist)))
                                (when (not (eq usage :null))
                                  (funcall receiver
                                           `(:input-tokens ,(assoc-default 'prompt_tokens usage))))))))))))))
@@ -423,9 +462,9 @@ STREAMING if non-nil, turn on response streaming."
 (cl-defmethod llm-capabilities ((provider llm-openai))
   (seq-uniq
    (append '(streaming embeddings tool-use streaming-tool-use json-response model-list)
-           (when-let ((model (llm-models-match (llm-openai-chat-model provider))))
+           (when-let* ((model (llm-models-match (llm-openai-chat-model provider))))
              (seq-intersection (llm-model-capabilities model)
-                               '(image-input))))))
+                               '(image-input reasoning))))))
 
 (cl-defmethod llm-capabilities ((provider llm-openai-compatible))
   (append '(streaming model-list)

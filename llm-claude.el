@@ -34,7 +34,7 @@
 ;; Models defined at https://docs.anthropic.com/claude/docs/models-overview
 (cl-defstruct (llm-claude (:include llm-standard-chat-provider))
   (key nil :read-only t)
-  (chat-model "claude-sonnet-4-5" :read-only t))
+  (chat-model "claude-sonnet-4-6" :read-only t))
 
 (cl-defmethod llm-nonfree-message-info ((_ llm-claude))
   "Return Claude's nonfree ToS."
@@ -122,20 +122,27 @@
                                                                        (llm-tool-options-tool-choice options)))))))
                                 (when (stringp (llm-tool-options-tool-choice options))
                                   (list :name (llm-tool-options-tool-choice options)))))))
-    (when (llm-chat-prompt-reasoning prompt)
-      (setq request (plist-put request :thinking
-                               (let (thinking-plist)
-                                 (setq thinking-plist (plist-put thinking-plist
-                                                                 :type
-                                                                 (if (eq (llm-chat-prompt-reasoning prompt) 'none)
-                                                                     "disabled" "enabled")))
-                                 (if (not (eq (llm-chat-prompt-reasoning prompt) 'none))
-                                     (plist-put thinking-plist :budget_tokens
-                                                (pcase (llm-chat-prompt-reasoning prompt)
-                                                  ('light 3000)
-                                                  ('medium 10000)
-                                                  ('maximum 32000))))
-                                 thinking-plist))))
+    (when-let* ((model (llm-models-match (llm-claude-chat-model provider))))
+      (when (and (member (llm-model-symbol model) '(claude-4-6-opus claude-4-6-sonnet claude-4-7-opus))
+                 ;; For some reason, Claude doesn't let you set thinking when forced to make a tool call.
+                 (not (equal (and (llm-chat-prompt-tool-options prompt)
+                                  (llm-tool-options-tool-choice (llm-chat-prompt-tool-options prompt)))
+                             'any)))
+        ;; Claude should think by default - the user of the llm package should
+        ;; generally expect that if the model supports reasoning, it will be
+        ;; used. But if the user explicitly disabled reasoning, we should
+        ;; respect that.
+        (setq request (plist-put request :thinking `(:type
+                                                     ,(if (eq 'none (llm-chat-prompt-reasoning prompt))
+                                                          "disabled"
+                                                        "adaptive"))))))
+    (when (and (llm-chat-prompt-reasoning prompt)
+               (not (eq 'none (llm-chat-prompt-reasoning prompt))))
+      (setq request (plist-put request :output_config `(:effort
+                                                        ,(pcase (llm-chat-prompt-reasoning prompt)
+                                                           ('light "low")
+                                                           ('medium "medium")
+                                                           ('maximum "max"))))))
     (append request (llm-provider-utils-non-standard-params-plist prompt))))
 
 (defun llm-claude--multipart-content (content)
@@ -157,6 +164,7 @@
                     (signal 'llm-invalid-argument
                             (list (format "Unsupported multipart content: %s" part))))))
            (llm-multipart-parts content))))
+
 (cl-defmethod llm-provider-extract-tool-uses ((_ llm-claude) response)
   (let ((content (append (assoc-default 'content response) nil)))
     (cl-loop for item in content
@@ -177,9 +185,11 @@
                     tool-uses))))
 
 (cl-defmethod llm-provider-chat-extract-result ((_ llm-claude) response)
-  (when (> (length (assoc-default 'content response)) 0)
-    (let ((content (aref (assoc-default 'content response) 0)))
-      (assoc-default 'text content))))
+  (let ((len (length (assoc-default 'content response))))
+    (cl-loop for i from 0 below len
+             for content = (aref (assoc-default 'content response) i)
+             when (equal "text" (assoc-default 'type content))
+             return (assoc-default 'text content))))
 
 (cl-defmethod llm-provider-extract-reasoning ((_ llm-claude) response)
   (when (> (length (assoc-default 'content response)) 0)

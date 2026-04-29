@@ -131,6 +131,11 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
     :context-length 1000000
     :regex (rx (seq "gpt-5\\.4" (or string-end (seq (or "-" ".") (+ digit))))))
    (make-llm-model
+    :name "GPT-5.5" :symbol 'gpt-5-5
+    :capabilities '(generation tool-use image-input json-response reasoning)
+    :context-length 1000000
+    :regex (rx (seq "gpt-5\\.5" (or string-end (seq (or "-" ".") (+ digit))))))
+   (make-llm-model
     :name "GPT-5" :symbol 'gpt-5
     :capabilities '(generation tool-use image-input json-response reasoning)
     :context-length 400000
@@ -152,35 +157,35 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
     :regex "text-embedding-ada-002")
    ;; https://docs.anthropic.com/en/docs/about-claude/models
    (make-llm-model
-    :name "Claude 4.5 Sonnet" :symbol 'claude-4.5-sonnet
-    :capabilities '(generation tool-use image-input pdf-input caching json-response)
+    :name "Claude 4.5 Sonnet" :symbol 'claude-4-5-sonnet
+    :capabilities '(generation tool-use image-input pdf-input caching json-response reasoning)
     :context-length 200000
     :regex "claude-sonnet-4-5")
    (make-llm-model
-    :name "Claude 4.5 Haiku" :symbol 'claude-4.5-haiku
-    :capabilities '(generation tool-use image-input pdf-input caching)
+    :name "Claude 4.5 Haiku" :symbol 'claude-4-5-haiku
+    :capabilities '(generation tool-use image-input pdf-input caching reasoning)
     :context-length 200000
     :regex "claude-haiku-4-5")
    (make-llm-model
     :name "Claude 4.5 Opus" :symbol 'claude-4-5-opus
-    :capabilities '(generation tool-use image-input pdf-input caching json-response)
+    :capabilities '(generation tool-use image-input pdf-input caching json-response reasoning)
     :context-length 200000
     :regex "claude-opus-4-5")
    (make-llm-model
-    :name "Claude 4.7 Opus":symbol 'claude-4-7-opus
-    :capabilities '(generation tool-use image-input pdf-input caching json-response)
-    :context-length 1000000
-    :regex "claude-opus-4-7")
-   (make-llm-model
     :name "Claude 4.6 Opus" :symbol 'claude-4-6-opus
-    :capabilities '(generation tool-use image-input pdf-input caching json-response)
+    :capabilities '(generation tool-use image-input pdf-input caching json-response reasoning)
     :context-length 200000
     :regex "claude-opus-4-6")
    (make-llm-model
     :name "Claude 4.6 Sonnet" :symbol 'claude-4-6-sonnet
-    :capabilities '(generation tool-use image-input pdf-input caching json-response)
+    :capabilities '(generation tool-use image-input pdf-input caching json-response reasoning)
     :context-length 200000
     :regex "claude-sonnet-4-6")
+   (make-llm-model
+    :name "Claude 4.7 Opus" :symbol 'claude-4-7-opus
+    :capabilities '(generation tool-use image-input pdf-input caching json-response reasoning)
+    :context-length 200000
+    :regex "claude-opus-4-7")
    (make-llm-model
     :name "Claude 4.1 Opus" :symbol 'claude-4-1-opus
     :capabilities '(generation tool-use image-input pdf-input caching json-response)
@@ -366,7 +371,7 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
     :context-length 1000000
     :regex "deepseek-v4-pro")
    (make-llm-model
-    :name "Deepseek V4 Fash" :symbol 'deepseek-v4-flash
+    :name "Deepseek V4 Flash" :symbol 'deepseek-v4-flash
     :capabilities '(generation reasoning tool-use free-software)  ;; MIT license
     :context-length 1000000
     :regex "deepseek-v4-flash")

@@ -48,6 +48,7 @@
 RESPONSE can be nil if the response is complete."
   (when response
     (let* ((choices (assoc-default 'choices response))
+           (usage (assoc-default 'usage response))
            (delta (when (> (length choices) 0)
                     (assoc-default 'delta (aref choices 0))))
            (content (llm-provider-utils-json-val
@@ -55,7 +56,10 @@ RESPONSE can be nil if the response is complete."
            (reasoning (llm-provider-utils-json-val
                        (assoc-default 'reasoning_content delta))))
       (append (when content (list :text content))
-              (when reasoning (list :reasoning reasoning))))))
+              (when reasoning (list :reasoning reasoning))
+              (when (and usage (not (eq usage :null)))
+                (list :input-tokens (assoc-default 'prompt_tokens usage)
+                      :output-tokens (assoc-default 'completion_tokens usage)))))))
 
 (cl-defmethod llm-provider-streaming-media-handler ((_ llm-deepseek) receiver _)
   (cons 'text/event-stream
@@ -73,6 +77,17 @@ RESPONSE can be nil if the response is complete."
   (append '(streaming model-list)
           (when-let* ((model (llm-models-match (llm-deepseek-chat-model provider))))
             (llm-model-capabilities model))))
+
+(cl-defmethod llm-openai--build-reasoning ((_ llm-deepseek) prompt)
+  (when (llm-chat-prompt-reasoning prompt)
+    (pcase (llm-chat-prompt-reasoning prompt)
+      ('none '(:thinking (:type "disabled")))
+      ('light '(:thinking (:type "enabled") :reasoning_effort "low"))
+      ('medium '(:thinking (:type "enabled") :reasoning_effort "medium"))
+      ('maximum '(:thinking (:type "enabled") :reasoning_effort "high"))
+      (_ (signal 'llm-not-supported
+                 (list (format "Unknown reasoning effort option: %s"
+                               (llm-chat-prompt-reasoning prompt))))))))
 
 (provide 'llm-deepseek)
 
