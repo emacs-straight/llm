@@ -145,6 +145,10 @@ When picking a chat or embedding model, anything can be used, as long as the ser
 The =:regex= needs to uniquely identify the model passed in from a provider's chat or embedding model.
 
 Once this is done, the model will be recognized to have the given context length and capabilities.
+
+The =llm= package does not attempt to enforce capabilities: if settings are set that cannot be used by the model or provider, they are ignored if possible.  For example, not every model supports reasoning, but if the user chooses a model without it, and the client sets a reasoning level, this won't result in an error.  It is the responsibility of the client to enforce options via the list of capabilities that they consider essential.
+* Model advice for users
+This package attempts to support the latest models.  Often, providers will have slightly different API use for newer models that are incompatible with older models.  We do not attempt to maintain all features for all models, due to complexity issues.  We try to always have a recent model as the default chat model for all providers.  If you choose a model yourself, then you should keep it updated as it gets new versions.
 * =llm= and the use of non-free LLMs
 The =llm= package is part of GNU Emacs by being part of GNU ELPA.  Unfortunately, the most popular LLMs in use are non-free, which is not what GNU software should be promoting by inclusion.  On the other hand, by use of the =llm= package, the user can make sure that any client that codes against it will work with free models that come along.  It's likely that sophisticated free LLMs will, emerge, although it's unclear right now what free software means with respect to LLMs.  Because of this tradeoff, we have decided to warn the user when using non-free LLMs (which is every LLM supported right now except the fake one).  You can turn this off the same way you turn off any other warning, by clicking on the left arrow next to the warning when it comes up.  Alternatively, you can set ~llm-warn-on-nonfree~ to ~nil~.  This can be set via customization as well.
 

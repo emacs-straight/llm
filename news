@@ -1,10 +1,16 @@
-1 Version 0.30.2
+1 Version 0.30.3
+════════════════
+
+  • Fix for OpenRouter breakage
+
+
+2 Version 0.30.2
 ════════════════
 
   • Fix json encoding error caused by utf-8 strings for Open AI and
     Ollama
-  • Add Qwen 3.6, Claude Opus 4.7, Kimi K2.6, Qwen 3.6, Chat GPT 5.5 and
-    Deepseek V4.
+  • Add Claude Opus 4.7, Kimi K2.6, Qwen 3.6, Chat GPT 5.5, Mistral
+    Medium 3.5, XiaoMi 2.5, and Deepseek V4.
   • Improved support for Open AI streaming for tool calls, by [Renato
     Ferreira](<https://github.com/renatofdds>)
   • Add reasoning controls to DeepSeek and OpenAI
@@ -15,7 +21,7 @@
   • Return token counts for DeepSeek
 
 
-2 Version 0.30.1
+3 Version 0.30.1
 ════════════════
 
   • Fix lack of reasoning response when doing tool calls
@@ -23,7 +29,7 @@
     `reasoning' blocks for streaming
 
 
-3 Version 0.30.0
+4 Version 0.30.0
 ════════════════
 
   • Add `:input-tokens' and `:output-tokens' to multioutput result.
@@ -39,7 +45,7 @@
   • Added Claude Sonnet 4.6
 
 
-4 Version 0.29.0
+5 Version 0.29.0
 ════════════════
 
   • Check for tool use mismatches and define new errors for them
@@ -53,14 +59,14 @@
   • Allow Ollama authed keys to be functions
 
 
-5 Version 0.28.5
+6 Version 0.28.5
 ════════════════
 
   • Improved the tool calling docs
   • Fix for running tools in the original buffer with streaming
 
 
-6 Version 0.28.4
+7 Version 0.28.4
 ════════════════
 
   • Removed bad interactions made in Ollama tool calls
@@ -70,7 +76,7 @@
   • Run tools in the original buffer
 
 
-7 Version 0.28.3
+8 Version 0.28.3
 ════════════════
 
   • Fixed breakage in Ollama streaming tool calling
@@ -78,19 +84,19 @@
   • Add Gemini 3 Flash
 
 
-8 Version 0.28.2
+9 Version 0.28.2
 ════════════════
 
   • Add Chat GPT post 5.0 series models, such as 5.1 and 5.2
 
 
-9 Version 0.28.1
-════════════════
+10 Version 0.28.1
+═════════════════
 
   • Fix error on empty Claude responses
 
 
-10 Version 0.28.0
+11 Version 0.28.0
 ═════════════════
 
   • Add tool calling options, for forbidding or forcing tool choice.
@@ -102,7 +108,7 @@
   • Add Claude Opus 4.5
 
 
-11 Version 0.27.3
+12 Version 0.27.3
 ═════════════════
 
   • Add reasoning output for Gemini.
@@ -112,7 +118,7 @@
   • Fix incorrect vectorzation of alists in `non-standard-params'.
 
 
-12 Version 0.27.2
+13 Version 0.27.2
 ═════════════════
 
   • Add JSON response capabilities to Gemini, which had a non-standard
@@ -120,7 +126,7 @@
   • Add Claude 4.1 to supported models
 
 
-13 Version 0.27.1
+14 Version 0.27.1
 ═════════════════
 
   • Add thinking control to Gemini / Vertex.
@@ -130,7 +136,7 @@
   • Add Open AI GPT-5 models
 
 
-14 Version 0.27.0
+15 Version 0.27.0
 ═════════════════
 
   • Add `thinking' option to control the amount of thinking that happens
@@ -139,7 +145,7 @@
   • Fix Claude extraction of text and reasoning results when reasoning
 
 
-15 Version 0.26.1
+16 Version 0.26.1
 ═════════════════
 
   • Add Claude 4 models
@@ -148,7 +154,7 @@
   • Fix Ollama tool-use booleans
 
 
-16 Version 0.26.0
+17 Version 0.26.0
 ═════════════════
 
   • Call tools with `nil' when called with false JSON values.
@@ -158,10 +164,9 @@
   • Fix reasoning model and streaming incompatibility
 
 
-17 Version 0.25.0
+18 Version 0.25.0
 ═════════════════
 
   • Add `llm-ollama-authed' provider, which is like Ollama but takes a
     key.
-  • Set Gemini 2.5 Pro to be the default Gemini model
   …  …
