@@ -7,7 +7,10 @@
   • Fix error with logged tool calls
   • Fix behavior when tool calling has an error; we no longer call the
     success result as well
-  • Added Gemini 3.5
+  • Fix error with Claude tool use requests
+  • Fix error with Claude 4.5 Haiku and reasoning support
+  • Tweaked Claude name and capabilities to not always support reasoning
+  • Added Gemini 3.5, Qwen 3.7
 
 
 2 Version 0.30.3
@@ -154,13 +157,4 @@
   • Add `thinking' option to control the amount of thinking that happens
     for reasoning models.
   • Fix incorrectly low default Claude max tokens
-  • Fix Claude extraction of text and reasoning results when reasoning
-
-
-17 Version 0.26.1
-═════════════════
-
-  • Add Claude 4 models
-  • Fix error using Open AI for batch embeddings
-  • Add streaming tool calls for Ollama
   …  …

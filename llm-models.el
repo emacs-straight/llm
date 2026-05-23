@@ -163,7 +163,7 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
     :regex "claude-sonnet-4-5")
    (make-llm-model
     :name "Claude 4.5 Haiku" :symbol 'claude-4-5-haiku
-    :capabilities '(generation tool-use image-input pdf-input caching reasoning)
+    :capabilities '(generation tool-use image-input pdf-input caching)
     :context-length 200000
     :regex "claude-haiku-4-5")
    (make-llm-model
@@ -448,14 +448,19 @@ REGEX is a regular expression that can be used to identify the model, uniquely (
     :regex "qwen-?2\\.5")
    (make-llm-model
     :name "Qwen 3.5" :symbol 'qwen-3.5
-    :capabilities '(generation tool-use free-software)  ;; Apache 2 license
+    :capabilities '(generation tool-use free-software reasoning)  ;; Apache 2 license
     :context-length 256000
     :regex "qwen-?3\\.5")
    (make-llm-model
     :name "Qwen 3.6" :symbol 'qwen-3.6
-    :capabilities '(generation tool-use free-software image-input) ;; Apache 2 license
+    :capabilities '(generation tool-use free-software image-input reasoning) ;; Apache 2 license
     :context-length 1000000
     :regex "qwen-?3\\.6")
+   (make-llm-model
+    :name "Qwen 3.7" :symbol 'qwen-3.7
+    :capabilities '(generation tool-use free-software image-input reasoning) ;; Apache 2 license
+    :context-length 1000000
+    :regex "qwen-?3\\.7")
    (make-llm-model
     :name "Qwen 3 Coder Next" :symbol 'qwen-3-coder-next
     :capabilities '(generation tool-use free-software)  ;; Apache 2 license
