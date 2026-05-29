@@ -1,4 +1,10 @@
-1 Version 0.31.0
+1 Version 0.31.1
+════════════════
+
+  • Added Claude Opus 4.8, StepFun 3.7 Flash
+
+
+2 Version 0.31.0
 ════════════════
 
   • Switch Open AI to Responses API, for more functionality
@@ -13,13 +19,13 @@
   • Added Gemini 3.5, Qwen 3.7
 
 
-2 Version 0.30.3
+3 Version 0.30.3
 ════════════════
 
   • Fix for OpenRouter breakage
 
 
-3 Version 0.30.2
+4 Version 0.30.2
 ════════════════
 
   • Fix json encoding error caused by utf-8 strings for Open AI and
@@ -36,7 +42,7 @@
   • Return token counts for DeepSeek
 
 
-4 Version 0.30.1
+5 Version 0.30.1
 ════════════════
 
   • Fix lack of reasoning response when doing tool calls
@@ -44,7 +50,7 @@
     `reasoning' blocks for streaming
 
 
-5 Version 0.30.0
+6 Version 0.30.0
 ════════════════
 
   • Add `:input-tokens' and `:output-tokens' to multioutput result.
@@ -60,7 +66,7 @@
   • Added Claude Sonnet 4.6
 
 
-6 Version 0.29.0
+7 Version 0.29.0
 ════════════════
 
   • Check for tool use mismatches and define new errors for them
@@ -74,14 +80,14 @@
   • Allow Ollama authed keys to be functions
 
 
-7 Version 0.28.5
+8 Version 0.28.5
 ════════════════
 
   • Improved the tool calling docs
   • Fix for running tools in the original buffer with streaming
 
 
-8 Version 0.28.4
+9 Version 0.28.4
 ════════════════
 
   • Removed bad interactions made in Ollama tool calls
@@ -91,27 +97,27 @@
   • Run tools in the original buffer
 
 
-9 Version 0.28.3
-════════════════
+10 Version 0.28.3
+═════════════════
 
   • Fixed breakage in Ollama streaming tool calling
   • Fixed incorrect Ollama streaming tool use capability reporting
   • Add Gemini 3 Flash
 
 
-10 Version 0.28.2
+11 Version 0.28.2
 ═════════════════
 
   • Add Chat GPT post 5.0 series models, such as 5.1 and 5.2
 
 
-11 Version 0.28.1
+12 Version 0.28.1
 ═════════════════
 
   • Fix error on empty Claude responses
 
 
-12 Version 0.28.0
+13 Version 0.28.0
 ═════════════════
 
   • Add tool calling options, for forbidding or forcing tool choice.
@@ -123,7 +129,7 @@
   • Add Claude Opus 4.5
 
 
-13 Version 0.27.3
+14 Version 0.27.3
 ═════════════════
 
   • Add reasoning output for Gemini.
@@ -133,7 +139,7 @@
   • Fix incorrect vectorzation of alists in `non-standard-params'.
 
 
-14 Version 0.27.2
+15 Version 0.27.2
 ═════════════════
 
   • Add JSON response capabilities to Gemini, which had a non-standard
@@ -141,7 +147,7 @@
   • Add Claude 4.1 to supported models
 
 
-15 Version 0.27.1
+16 Version 0.27.1
 ═════════════════
 
   • Add thinking control to Gemini / Vertex.
@@ -151,10 +157,9 @@
   • Add Open AI GPT-5 models
 
 
-16 Version 0.27.0
+17 Version 0.27.0
 ═════════════════
 
   • Add `thinking' option to control the amount of thinking that happens
     for reasoning models.
-  • Fix incorrectly low default Claude max tokens
   …  …
