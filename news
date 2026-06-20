@@ -1,7 +1,12 @@
 1 Version 0.31.1
 ════════════════
 
+  • Fixed Audio API support for Open AI-compatible providers and Ollama
+    providers by [Sergey Kostyaev].
   • Added Claude Opus 4.8, StepFun 3.7 Flash, and Claude Fable 5
+
+
+[Sergey Kostyaev] <https://github.com/s-kostyaev>
 
 
 2 Version 0.31.0
@@ -33,13 +38,16 @@
   • Add Claude Opus 4.7, Kimi K2.6, Qwen 3.6, Chat GPT 5.5, Mistral
     Medium 3.5, XiaoMi 2.5, and Deepseek V4.
   • Improved support for Open AI streaming for tool calls, by [Renato
-    Ferreira](<https://github.com/renatofdds>)
+    Ferreira].
   • Add reasoning controls to DeepSeek and OpenAI
   • Fix reasoning for Claude Opus 4.7 and Chat GPT.
   • Changed default Claude model to 4.6 Sonnet
   • Fix text extraction for Claude when using reasoning
   • Return token counts when streaming
   • Return token counts for DeepSeek
+
+
+[Renato Ferreira] <https://github.com/renatofdds>
 
 
 5 Version 0.30.1
@@ -154,12 +162,4 @@
   • Change default Vertex, Gemini model to Gemini 2.5 Pro.
   • Add Gemini 2.5 Flash model
   • Fix Vertex / Gemini streaming tool calls
-  • Add Open AI GPT-5 models
-
-
-17 Version 0.27.0
-═════════════════
-
-  • Add `thinking' option to control the amount of thinking that happens
-    for reasoning models.
   …  …
