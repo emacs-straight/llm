@@ -4,6 +4,8 @@
   • Fixed Audio API support for Open AI-compatible providers and Ollama
     providers by [Sergey Kostyaev].
   • Added Claude Opus 4.8, StepFun 3.7 Flash, and Claude Fable 5
+  • Don't send json format when unsupported; add `json-response' to more
+    models that support it.
 
 
 [Sergey Kostyaev] <https://github.com/s-kostyaev>
@@ -159,7 +161,4 @@
 ═════════════════
 
   • Add thinking control to Gemini / Vertex.
-  • Change default Vertex, Gemini model to Gemini 2.5 Pro.
-  • Add Gemini 2.5 Flash model
-  • Fix Vertex / Gemini streaming tool calls
   …  …
