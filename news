@@ -6,6 +6,7 @@
   • Added Claude Opus 4.8, StepFun 3.7 Flash, and Claude Fable 5
   • Don't send json format when unsupported; add `json-response' to more
     models that support it.
+  • Fix OpenAI compatible names
 
 
 [Sergey Kostyaev] <https://github.com/s-kostyaev>
