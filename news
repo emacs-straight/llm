@@ -1,4 +1,13 @@
-1 Version 0.31.4
+1 Version 0.32.0
+════════════════
+
+  • Use success callback when there is partial tool call success, with
+    multi-output `:errors' key
+  • Always add errors to the prompt after tool calling
+  • Add Qwen 3.8, GLM 5.3 and Gemini 3.7 Flash (now the default)
+
+
+2 Version 0.31.4
 ════════════════
 
   • Fix missing symbol for Gemini 3.6 Flash
@@ -6,7 +15,7 @@
   • Added Claude 5 Opus and Sonnet, defaulted Claude to Claude 5 Sonnet
 
 
-2 Version 0.31.3
+3 Version 0.31.3
 ════════════════
 
   • Added Kimi K3.
@@ -15,7 +24,7 @@
   • Fix some incorrect model identification issues.
 
 
-3 Version 0.31.2
+4 Version 0.31.2
 ════════════════
 
   • Fixed Deepseek streaming tool calling, by [İsa Mert Gürbüz].
@@ -24,7 +33,7 @@
 [İsa Mert Gürbüz] <https://github.com/isamert>
 
 
-4 Version 0.31.1
+5 Version 0.31.1
 ════════════════
 
   • Fixed Audio API support for Open AI-compatible providers and Ollama
@@ -38,7 +47,7 @@
 [Sergey Kostyaev] <https://github.com/s-kostyaev>
 
 
-5 Version 0.31.0
+6 Version 0.31.0
 ════════════════
 
   • Switch Open AI to Responses API, for more functionality
@@ -53,13 +62,13 @@
   • Added Gemini 3.5, Qwen 3.7
 
 
-6 Version 0.30.3
+7 Version 0.30.3
 ════════════════
 
   • Fix for OpenRouter breakage
 
 
-7 Version 0.30.2
+8 Version 0.30.2
 ════════════════
 
   • Fix json encoding error caused by utf-8 strings for Open AI and
@@ -79,7 +88,7 @@
 [Renato Ferreira] <https://github.com/renatofdds>
 
 
-8 Version 0.30.1
+9 Version 0.30.1
 ════════════════
 
   • Fix lack of reasoning response when doing tool calls
@@ -87,8 +96,8 @@
     `reasoning' blocks for streaming
 
 
-9 Version 0.30.0
-════════════════
+10 Version 0.30.0
+═════════════════
 
   • Add `:input-tokens' and `:output-tokens' to multioutput result.
   • Fixed inability of zero-arg tools to be called
@@ -103,7 +112,7 @@
   • Added Claude Sonnet 4.6
 
 
-10 Version 0.29.0
+11 Version 0.29.0
 ═════════════════
 
   • Check for tool use mismatches and define new errors for them
@@ -117,14 +126,14 @@
   • Allow Ollama authed keys to be functions
 
 
-11 Version 0.28.5
+12 Version 0.28.5
 ═════════════════
 
   • Improved the tool calling docs
   • Fix for running tools in the original buffer with streaming
 
 
-12 Version 0.28.4
+13 Version 0.28.4
 ═════════════════
 
   • Removed bad interactions made in Ollama tool calls
@@ -134,7 +143,7 @@
   • Run tools in the original buffer
 
 
-13 Version 0.28.3
+14 Version 0.28.3
 ═════════════════
 
   • Fixed breakage in Ollama streaming tool calling
@@ -142,25 +151,21 @@
   • Add Gemini 3 Flash
 
 
-14 Version 0.28.2
+15 Version 0.28.2
 ═════════════════
 
   • Add Chat GPT post 5.0 series models, such as 5.1 and 5.2
 
 
-15 Version 0.28.1
+16 Version 0.28.1
 ═════════════════
 
   • Fix error on empty Claude responses
 
 
-16 Version 0.28.0
+17 Version 0.28.0
 ═════════════════
 
   • Add tool calling options, for forbidding or forcing tool choice.
   • Fix bug (or perhaps breaking change) in Ollama tool use.
-  • Add Gemini 3 model, update Gemini code to pass thought signatures
-  • Add `json-response' capability to Claude 4.5 and 4.1 Opus models
-  • Set Sonnet 4.5 as the default Claude model
-  • Fix outdated max output settings in Claude
   …  …
