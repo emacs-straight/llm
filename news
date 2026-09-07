@@ -1,8 +1,19 @@
 1 Version 0.32.1
 ════════════════
 
-  • Added tool IDs to Ollama streaming for better context-keeping
+  • Added tool IDs to Ollama streaming for better context-keeping, by
+    [yibie]
   • Add GPT 6.0 Astra, Gemini 3.8 Flash (now the default)
+  • Throw meaningful error if ports are strings instead of integer; also
+    fix the documentation
+  • Fixed Qwen3 identification regex
+  • No longer send Open AI reasoning if unset in the `llm-chat-prompt',
+    by [İsa Mert Gürbüz]
+
+
+[yibie] <https://github.com/yibie>
+
+[İsa Mert Gürbüz] <https://github.com/isamert>
 
 
 2 Version 0.32.0
@@ -148,24 +159,4 @@
   • Fixed Ollama tool calling requests
   • Fixed Ollama reasoning, whose API has changed
   • Added gpt-oss, supported low/medium/high reasoning with Ollama
-  • Run tools in the original buffer
-
-
-15 Version 0.28.3
-═════════════════
-
-  • Fixed breakage in Ollama streaming tool calling
-  • Fixed incorrect Ollama streaming tool use capability reporting
-  • Add Gemini 3 Flash
-
-
-16 Version 0.28.2
-═════════════════
-
-  • Add Chat GPT post 5.0 series models, such as 5.1 and 5.2
-
-
-17 Version 0.28.1
-═════════════════
-
   …  …
