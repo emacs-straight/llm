@@ -2,7 +2,8 @@
 ════════════════
 
   • Add Muse Spark and Muse Spark Contributor models (usable as Open AI
-    compatible model, or with OpenRouter)
+    compatible model, or with OpenRouter), and add GPT 6 Sol and Luna
+  • Set default Open AI model to GPT 6 Sol
 
 
 2 Version 0.32.1
@@ -162,6 +163,4 @@
 15 Version 0.28.4
 ═════════════════
 
-  • Removed bad interactions made in Ollama tool calls
-  • Fixed Ollama tool calling requests
   …  …
