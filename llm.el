@@ -803,7 +803,10 @@ This will return an alist keyed by the name of each question, where the
 exact value is determined by the type of question.  A `llm-question-choice'
 question will return a `llm-decision-choice' struct.
 
-This is a fast call, so no async option should be necessary.")
+This is a fast call all the time, although there is always the chance of
+a slow call, especially with local providers that may need warming up.
+When it is fast, it usually is fast enough that the user may not notice
+a lag.")
 
 (cl-defmethod llm-decide :before (provider _ _)
   "Issue a warning if the LLM is non-free."
@@ -814,6 +817,95 @@ This is a fast call, so no async option should be necessary.")
   "Catch trivial configuration mistake."
   (signal 'llm-provider-unconfigured
           '("LLM provider was nil.  Please set the provider in the application you are using")))
+
+(cl-defgeneric llm-decide-async (provider questions state success-callback error-callback)
+  "Decide each element of QUESTIONS.
+
+PROVIDER, QUESTIONS, and STATE are all the same as `llm-decide'.
+
+SUCCESS-CALLBACK is a single-argument callback that will be called with
+the result, an alist keyed by the name of each question.
+
+ERROR-CALLBACK is a two argument callback that is called with the error
+type and the error object (usually a message) in the result of an error.")
+
+(cl-defmethod llm-decide-async :before (provider _ _ _ _)
+  "Issue a warning if the LLM is non-free."
+  (when-let* ((info (llm-nonfree-message-info provider)))
+    (llm--warn-on-nonfree (llm-name provider) info)))
+
+(cl-defmethod llm-decide-async ((_ (eql nil)) _ _ _ _)
+  "Catch trivial configuration mistake."
+  (signal 'llm-provider-unconfigured
+          '("LLM provider was nil.  Please set the provider in the application you are using")))
+
+(cl-defun llm-decide-bool (provider question context &key target-threshold)
+  "Ask PROVIDER whether QUESTION is true, given CONTEXT.
+
+Wrapper for `llm-decide' bool decisions.
+
+If the confidence that QUESTION is true equals or exceeds
+TARGET-THRESHOLD (by default 0.7), return a non-nil value, otherwise,
+return nil.
+
+CONTEXT is a string."
+  (>= (llm-decision-bool-confidence
+       (alist-get 'question
+                  (llm-decide provider
+                              (list (make-llm-question-bool
+                                     :name 'question
+                                     :instructions question))
+                              context)))
+      (or target-threshold 0.7)))
+
+(cl-defun llm-decide-choice (provider instructions choices-alist context &key target-threshold)
+  "Ask PROVIDER to choose one of CHOICES, about the CONTEXT.
+
+INSTRUCTIONS is a string explaining how to make the choice.
+
+CHOICES-ALIST are an alist of symbols to an explanation of their
+meaning.  CONTEXT is the context that the choices will be judged
+against.  The model has to have confidence of TARGET-THRESHOLD or
+above (by default 0.7), and will be used to judge if the model is
+sufficiently confident in the choice.
+
+This returns either one of the symbols in the CHOICES-ALIST or nil, if
+the answer could not be determined with sufficient confidence."
+  (let* ((result (llm-decide
+                  provider
+                  (list (make-llm-question-choice
+                         :name 'choice
+                         :choices choices-alist
+                         :instructions instructions))
+                  context))
+         (choice-result (alist-get 'choice result)))
+    (when (>= (llm-decision-choice-confidence choice-result)
+              (or target-threshold 0.7))
+      (llm-decision-choice-choice choice-result))))
+
+(cl-defun llm-decide-score (provider instructions scale context &key target-threshold)
+  "Ask PROVIDER to choose a score on SCALE, given CONTEXT.
+
+INSTRUCTIONS is a string providing information on how to evaluate the
+scale against the context.
+
+SCALE is a list strings, which are ordinal and increasing
+categories (such as small, medium, large or low, medium, high).
+
+This returns a floating point number among the SCALE, whose value can be
+between 0 and the length of the scale minus 1, if the confidence meets
+or exceeds TARGET-THRESHOLD (by default 0.7).  Otherwise, return nil."
+  (let* ((result (llm-decide
+                  provider
+                  (list (make-llm-question-score
+                         :name 'score
+                         :instructions instructions
+                         :scale scale))
+                  context))
+         (score-result (alist-get 'score result)))
+    (when (>= (llm-decision-score-confidence score-result)
+              (or target-threshold 0.7))
+      (llm-decision-score-score score-result))))
 
 (cl-defgeneric llm-count-tokens (provider string)
   "Return the number of tokens in STRING from PROVIDER.
@@ -924,6 +1016,10 @@ This should only be used for logging or debugging."
  'llm-request-timeout "LLM request timed out" 'llm-request-error)
 (define-error
  'llm-request-authentication-error "LLM request authentication failed" 'llm-request-error)
+(define-error
+ 'llm-request-too-many-requests "Too many requests by client" 'llm-request-error)
+(define-error
+ 'llm-request-service-unavailable "LLM provider is unavailable" 'llm-request-error)
 (define-error
  'llm-request-bad-request "LLM request was invalid" 'llm-request-error)
 (define-error

@@ -2,6 +2,11 @@
 ════════════════
 
   • Add `llm-decide', a way to get fast decisions
+  • Add new error subtypes `llm-request-too-many-requests' and
+    `llm-request-service-unavailable' and ensure that async callbacks
+    always get a correct error type, instead of just `error'.
+  • Add Claude Opus 5.5 and Sonnet 5.5, and make Sonnet 5.5 the default
+    Claude model.
 
 
 2 Version 0.32.2
@@ -152,16 +157,4 @@
   • Normalize false values in tool args or tool call results
   • Add Claude Opus 4.6
   • Fix bug running two async calls in parallel
-  • Set Gemini default to 3.0 pro
-  • Added Kimi k2.5, GLM-5, and Qwen 3 Coder Next
-  • Increased the default context length for unknown models to be more
-    up to date
-  • Allow Ollama authed keys to be functions
-
-
-15 Version 0.28.5
-═════════════════
-
-  • Improved the tool calling docs
-  • Fix for running tools in the original buffer with streaming
   …  …

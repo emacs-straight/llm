@@ -525,7 +525,18 @@
     the ordering of the strings.
   • `llm-decide provider questions state': Decide a list of questions
     based on the value of state.  This is a fast, synchronous function.
-    See the [Decisions] section for more information.
+    See the [Decisions] section for more information on this and the
+    other decision functions.
+  • `llm-decide-async provider questions state result-callback
+    error-callback': Decide a list of questions based on the value of
+    state, asynchronously.  See the [Decisions] section for more
+    information.
+  • `llm-decide-bool': Decide a single boolean question, a convenience
+    function for `llm-decide'.
+  • `llm-decide-choice': Decide a single multiple choice question, a
+    convenience function for `llm-decide'.
+  • `llm-decide-score': Decide a score along a scale, a convenience
+    function for `llm-decide'.
   • `llm-count-tokens provider string': Count how many tokens are in
     `string'.  This may vary by `provider', because some provideres
     implement an API for this, but typically is always about the same.
@@ -724,6 +735,10 @@
         fails (e.g., invalid API key).
       • `llm-request-bad-request': Signaled when the request was invalid
         (e.g., bad format).
+      • `llm-request-too-many-requests': Signaled when the client has
+        exceeded their rate limit.
+      • `llm-request-service-unavailable': Signaled when the LLM service
+        provider is temporarily unavailable.
     • `llm-tool-call-error': The base error for all tool calling errors.
       • `llm-tool-unknown-tool': Signaled when an LLM attempts to call a
         tool that was not provided in the prompt's tools list.
@@ -913,9 +928,10 @@
   Decisions are a way to ask the LLM to make a fast decision based on a
   set of options.  The LLM will return the option it thinks is best
   along with a confidence, and probabilities.  *This is alpha
-  functionality and the API may change in the future*. Decisions are
-  synchronous calls, since they return very quickly, and are extremely
-  cheap.
+  functionality and the API may change in the future*. Decisions can be
+  synchronous calls without significant wait times for the user, since
+  they return very quickly (in the low hundreds of milliseconds,
+  typically), and are extremely cheap.
 
   The `llm-typesafe' module defines the TypeSafe API, which can be used
   with [TypeSafe AI] as well as compatible open systems such as
@@ -981,6 +997,31 @@
   │            (llm-decision-score-score (alist-get 'priority result))
   │            (llm-decision-score-confidence (alist-get 'priority result)))))
   └────
+
+  `llm-decide-async' is also available, and has the same callback
+  structure as the rest of the library.
+
+  There are also methods to make calling `llm-decide' easier, when
+  dealing with single questions.  This, for example, returns `nil'.
+
+  ┌────
+  │ (llm-decide-bool my-llm-provider "Is this text Spanish?" "Meu aerobarco está cheio de enguias")
+  └────
+
+  This returns one of several choices, in this case, returning `pt'.
+
+  ┌────
+  │ (llm-decide-choice my-llm-provider "What language is this text in?" '((pt . "Portuguese") (it . "Italian") (es . "Spanish")) "Meu aerobarco está cheio de enguias")
+  └────
+
+  And this returns a score on a scale, in this case returning a float
+  such as `2.78', close to "Very unusual".
+
+  ┌────
+  │ (llm-decide-score my-llm-provider "Rate how unusual the sentence is" '("Common" "Ordinary" "Unusual" "Very unusual") "Meu aerobarco está cheio de enguias")
+  └────
+
+  All of these are synchronous only.
 
 
 [TypeSafe AI] <https://typesafe.ai/>

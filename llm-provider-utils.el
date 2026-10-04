@@ -315,7 +315,7 @@ return a list of `llm-chat-prompt-tool-use' structs.")
                    :headers (llm-provider-headers provider)
                    :data (llm-provider-embedding-request provider string))))
     (if-let* ((err-msg (llm-provider-embedding-extract-error provider response)))
-        (error err-msg)
+        (signal 'llm-error (list err-msg))
       (llm-provider-embedding-extract-result provider response))))
 
 (cl-defmethod llm-embedding-async ((provider llm-standard-full-provider) string vector-callback error-callback)
@@ -328,14 +328,14 @@ return a list of `llm-chat-prompt-tool-use' structs.")
      :on-success (lambda (data)
                    (if-let* ((err-msg (llm-provider-embedding-extract-error provider data)))
                        (llm-provider-utils-callback-in-buffer
-                        buf error-callback 'error
+                        buf error-callback 'llm-error
                         err-msg)
                      (llm-provider-utils-callback-in-buffer
                       buf vector-callback
                       (llm-provider-embedding-extract-result provider data))))
-     :on-error (lambda (_ data)
+     :on-error (lambda (type data)
                  (llm-provider-utils-callback-in-buffer
-                  buf error-callback 'error
+                  buf error-callback type
                   (if (stringp data)
                       data
                     (or (llm-provider-embedding-extract-error
@@ -350,7 +350,7 @@ return a list of `llm-chat-prompt-tool-use' structs.")
                    :headers (llm-provider-headers provider)
                    :data (llm-provider-batch-embeddings-request provider string-list))))
     (if-let* ((err-msg (llm-provider-embedding-extract-error provider response)))
-        (error err-msg)
+        (signal 'llm-request-error (list err-msg))
       (llm-provider-batch-embeddings-extract-result provider response))))
 
 (cl-defmethod llm-batch-embeddings-async ((provider llm-standard-full-provider) string-list vector-callback error-callback)
@@ -363,14 +363,14 @@ return a list of `llm-chat-prompt-tool-use' structs.")
      :on-success (lambda (data)
                    (if-let* ((err-msg (llm-provider-embedding-extract-error provider data)))
                        (llm-provider-utils-callback-in-buffer
-                        buf error-callback 'error
+                        buf error-callback 'llm-error
                         err-msg)
                      (llm-provider-utils-callback-in-buffer
                       buf vector-callback
                       (llm-provider-batch-embeddings-extract-result provider data))))
-     :on-error (lambda (_ data)
+     :on-error (lambda (type data)
                  (llm-provider-utils-callback-in-buffer
-                  buf error-callback 'error
+                  buf error-callback type
                   (if (stringp data)
                       data
                     (or (llm-provider-embedding-extract-error
@@ -401,7 +401,7 @@ return a list of `llm-chat-prompt-tool-use' structs.")
                                         :data (llm-provider-chat-request provider prompt nil)))
         (final-result nil))
     (if-let* ((err-msg (llm-provider-chat-extract-error provider response)))
-        (error err-msg)
+        (signal 'llm-request-error (list err-msg))
       (llm-provider-utils-process-result provider prompt
                                          (llm-provider-utils-extract-all
                                           provider response)
@@ -431,7 +431,7 @@ return a list of `llm-chat-prompt-tool-use' structs.")
                                           (generate-new-buffer " *llm-temp*" t))
                      (if-let* ((err-msg (llm-provider-chat-extract-error provider data)))
                          (llm-provider-utils-callback-in-buffer
-                          buf error-callback 'error
+                          buf error-callback 'llm-error
                           err-msg)
                        (llm-provider-utils-process-result
                         provider prompt
@@ -443,9 +443,9 @@ return a list of `llm-chat-prompt-tool-use' structs.")
                         (lambda (type msg)
                           (llm-provider-utils-callback-in-buffer
                            buf error-callback type msg))))))
-     :on-error (lambda (_ data)
+     :on-error (lambda (type data)
                  (llm-provider-utils-callback-in-buffer
-                  buf error-callback 'error
+                  buf error-callback type
                   (if (stringp data)
                       data
                     (or (llm-provider-chat-extract-error
@@ -513,7 +513,7 @@ Any strings will be concatenated, integers will be added, etc."
                          buf partial-callback callback-val))))
                   (lambda (err)
                     (llm-provider-utils-callback-in-buffer
-                     buf error-callback 'error
+                     buf error-callback 'llm-error
                      err)))
      :on-success
      (lambda (_)
@@ -534,26 +534,47 @@ Any strings will be concatenated, integers will be added, etc."
             (llm-provider-utils-callback-in-buffer buf response-callback result))
           (lambda (type msg)
             (llm-provider-utils-callback-in-buffer buf error-callback type msg)))))
-     :on-error (lambda (_ data)
+     :on-error (lambda (type data)
                  (llm-provider-utils-callback-in-buffer
-                  buf error-callback 'error
+                  buf error-callback type
                   (if (stringp data)
                       data
                     (or (llm-provider-chat-extract-error
                          provider data)
                         "Unknown error")))))))
 
-;; This is not yet a cl-defmethod, because the support for providers is unknown,
-;; and adding a type provisionally would be difficult because structs do not
-;; support multiple inheritance.
-(defun llm-provider-utils-decide (provider questions state)
+(cl-defmethod llm-decide ((provider llm-standard-decide-provider) questions state)
   (llm-provider-request-prelude provider)
   (let ((response (llm-request-plz-sync (llm-provider-decide-url provider)
                                         :headers (llm-provider-headers provider)
                                         :data (llm-provider-decide-request provider questions state))))
     (if-let* ((err-msg (llm-provider-decide-extract-error provider response)))
-        (error err-msg)
+        (signal 'llm-request-error (list err-msg))
       (llm-provider-decide-extract-result provider response))))
+
+(cl-defmethod llm-decide-async ((provider llm-standard-decide-provider) questions state
+                                result-callback error-callback)
+  (llm-provider-request-prelude provider)
+  (let ((buf (current-buffer)))
+    (llm-request-plz-async
+     (llm-provider-decide-url provider)
+     :headers (llm-provider-headers provider)
+     :data (llm-provider-decide-request provider questions state)
+     :on-success (lambda (data)
+                   (with-current-buffer (if (buffer-live-p buf)
+                                            buf
+                                          (generate-new-buffer " *llm-temp*" t))
+                     (if-let* ((err-msg (llm-provider-decide-extract-error provider data)))
+                         (llm-provider-utils-callback-in-buffer
+                          buf error-callback 'llm-error err-msg)
+                       (llm-provider-utils-callback-in-buffer
+                        buf result-callback (llm-provider-decide-extract-result provider data)))))
+     :on-error (lambda (type data)
+                 (llm-provider-utils-callback-in-buffer
+                  buf error-callback type
+                  (if (stringp data) data
+                    (or (llm-provider-decide-extract-error provider data)
+                        "Unknown error")))))))
 
 (defun llm-provider-utils-get-system-prompt (prompt &optional example-prelude)
   "From PROMPT, turn the context and examples into a string.
