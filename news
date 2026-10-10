@@ -1,4 +1,11 @@
-1 Version 0.33.0
+1 Version 0.33.1
+════════════════
+
+  • Add Claude Haiku 5.5, fix update for Claude default model to be
+    Sonnet 5.5
+
+
+2 Version 0.33.0
 ════════════════
 
   • Add `llm-decide', a way to get fast decisions
@@ -9,7 +16,7 @@
     Claude model.
 
 
-2 Version 0.32.2
+3 Version 0.32.2
 ════════════════
 
   • Add Muse Spark and Muse Spark Contributor models (usable as Open AI
@@ -17,7 +24,7 @@
   • Set default Open AI model to GPT 6 Sol
 
 
-3 Version 0.32.1
+4 Version 0.32.1
 ════════════════
 
   • Added tool IDs to Ollama streaming for better context-keeping, by
@@ -35,7 +42,7 @@
 [İsa Mert Gürbüz] <https://github.com/isamert>
 
 
-4 Version 0.32.0
+5 Version 0.32.0
 ════════════════
 
   • Use success callback when there is partial tool call success, with
@@ -45,7 +52,7 @@
     Flash (now the default)
 
 
-5 Version 0.31.4
+6 Version 0.31.4
 ════════════════
 
   • Fix missing symbol for Gemini 3.6 Flash
@@ -53,7 +60,7 @@
   • Added Claude 5 Opus and Sonnet, defaulted Claude to Claude 5 Sonnet
 
 
-6 Version 0.31.3
+7 Version 0.31.3
 ════════════════
 
   • Added Kimi K3.
@@ -62,7 +69,7 @@
   • Fix some incorrect model identification issues.
 
 
-7 Version 0.31.2
+8 Version 0.31.2
 ════════════════
 
   • Fixed Deepseek streaming tool calling, by [İsa Mert Gürbüz].
@@ -71,7 +78,7 @@
 [İsa Mert Gürbüz] <https://github.com/isamert>
 
 
-8 Version 0.31.1
+9 Version 0.31.1
 ════════════════
 
   • Fixed Audio API support for Open AI-compatible providers and Ollama
@@ -85,8 +92,8 @@
 [Sergey Kostyaev] <https://github.com/s-kostyaev>
 
 
-9 Version 0.31.0
-════════════════
+10 Version 0.31.0
+═════════════════
 
   • Switch Open AI to Responses API, for more functionality
   • Keep reasoning information between turns for improved performance in
@@ -100,13 +107,13 @@
   • Added Gemini 3.5, Qwen 3.7
 
 
-10 Version 0.30.3
+11 Version 0.30.3
 ═════════════════
 
   • Fix for OpenRouter breakage
 
 
-11 Version 0.30.2
+12 Version 0.30.2
 ═════════════════
 
   • Fix json encoding error caused by utf-8 strings for Open AI and
@@ -126,7 +133,7 @@
 [Renato Ferreira] <https://github.com/renatofdds>
 
 
-12 Version 0.30.1
+13 Version 0.30.1
 ═════════════════
 
   • Fix lack of reasoning response when doing tool calls
@@ -134,7 +141,7 @@
     `reasoning' blocks for streaming
 
 
-13 Version 0.30.0
+14 Version 0.30.0
 ═════════════════
 
   • Add `:input-tokens' and `:output-tokens' to multioutput result.
@@ -150,11 +157,9 @@
   • Added Claude Sonnet 4.6
 
 
-14 Version 0.29.0
+15 Version 0.29.0
 ═════════════════
 
   • Check for tool use mismatches and define new errors for them
   • Normalize false values in tool args or tool call results
-  • Add Claude Opus 4.6
-  • Fix bug running two async calls in parallel
   …  …
