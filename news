@@ -4,6 +4,7 @@
   • Add Claude Haiku 5.5, fix update for Claude default model to be
     Sonnet 5.5
   • Fix OpenRouter error type not getting populated
+  • Add decisions for OpenAI
 
 
 2 Version 0.33.0
