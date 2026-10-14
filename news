@@ -1,4 +1,11 @@
-1 Version 0.33.1
+1 Version 0.34.0
+════════════════
+
+  • Simplify error handling by never calling the error callback when
+    tool calling, but instead auto-populating responses
+
+
+2 Version 0.33.1
 ════════════════
 
   • Add Claude Haiku 5.5, fix update for Claude default model to be
@@ -8,7 +15,7 @@
   • Add decisions for OpenAI
 
 
-2 Version 0.33.0
+3 Version 0.33.0
 ════════════════
 
   • Add `llm-decide', a way to get fast decisions
@@ -19,7 +26,7 @@
     Claude model.
 
 
-3 Version 0.32.2
+4 Version 0.32.2
 ════════════════
 
   • Add Muse Spark and Muse Spark Contributor models (usable as Open AI
@@ -27,7 +34,7 @@
   • Set default Open AI model to GPT 6 Sol
 
 
-4 Version 0.32.1
+5 Version 0.32.1
 ════════════════
 
   • Added tool IDs to Ollama streaming for better context-keeping, by
@@ -45,7 +52,7 @@
 [İsa Mert Gürbüz] <https://github.com/isamert>
 
 
-5 Version 0.32.0
+6 Version 0.32.0
 ════════════════
 
   • Use success callback when there is partial tool call success, with
@@ -55,7 +62,7 @@
     Flash (now the default)
 
 
-6 Version 0.31.4
+7 Version 0.31.4
 ════════════════
 
   • Fix missing symbol for Gemini 3.6 Flash
@@ -63,7 +70,7 @@
   • Added Claude 5 Opus and Sonnet, defaulted Claude to Claude 5 Sonnet
 
 
-7 Version 0.31.3
+8 Version 0.31.3
 ════════════════
 
   • Added Kimi K3.
@@ -72,7 +79,7 @@
   • Fix some incorrect model identification issues.
 
 
-8 Version 0.31.2
+9 Version 0.31.2
 ════════════════
 
   • Fixed Deepseek streaming tool calling, by [İsa Mert Gürbüz].
@@ -81,8 +88,8 @@
 [İsa Mert Gürbüz] <https://github.com/isamert>
 
 
-9 Version 0.31.1
-════════════════
+10 Version 0.31.1
+═════════════════
 
   • Fixed Audio API support for Open AI-compatible providers and Ollama
     providers by [Sergey Kostyaev].
@@ -95,7 +102,7 @@
 [Sergey Kostyaev] <https://github.com/s-kostyaev>
 
 
-10 Version 0.31.0
+11 Version 0.31.0
 ═════════════════
 
   • Switch Open AI to Responses API, for more functionality
@@ -110,13 +117,13 @@
   • Added Gemini 3.5, Qwen 3.7
 
 
-11 Version 0.30.3
+12 Version 0.30.3
 ═════════════════
 
   • Fix for OpenRouter breakage
 
 
-12 Version 0.30.2
+13 Version 0.30.2
 ═════════════════
 
   • Fix json encoding error caused by utf-8 strings for Open AI and
@@ -136,7 +143,7 @@
 [Renato Ferreira] <https://github.com/renatofdds>
 
 
-13 Version 0.30.1
+14 Version 0.30.1
 ═════════════════
 
   • Fix lack of reasoning response when doing tool calls
@@ -144,7 +151,7 @@
     `reasoning' blocks for streaming
 
 
-14 Version 0.30.0
+15 Version 0.30.0
 ═════════════════
 
   • Add `:input-tokens' and `:output-tokens' to multioutput result.
@@ -153,9 +160,4 @@
   • Add support for Open AI compatible `reasoning_content' and
     `reasoning' blocks
   • Added Qwen 3.5, LFM2 and LFM 2.5 Thinking
-  • Added Gemini 3.1 Pro, Gemini 3.1 Flash Lite
-  • Added Chat GPT 5.4, with extra context
-  • Added StepFun 3.5 Flash
-  • Added Gemma 4
-  • Added Claude Sonnet 4.6
   …  …
