@@ -3,6 +3,7 @@
 
   • Add Gemini 4 Argon, and Muse Wonder and Muse Glimmer
   • Let errors in the async tool callback propagate
+  • Set "auto" model as default for OpenRouter
   • Add output tokens when streaming for Open AI compatible calls, if
     available
 
@@ -164,5 +165,4 @@
 ═════════════════
 
   • Add `:input-tokens' and `:output-tokens' to multioutput result.
-  • Fixed inability of zero-arg tools to be called
   …  …
