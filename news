@@ -3,6 +3,9 @@
 
   • Support Gemini decision models
   • Fix model recognition issues, by [Tekki]
+  • Add Gemini 4 Carbon and Hydrogen, and set Hydrogen to be the default
+    model
+  • Fix reasoning specification with a range of Gemini models
 
 
 [Tekki] <https://github.com/Tekki>
@@ -157,16 +160,7 @@
   • Changed default Claude model to 4.6 Sonnet
   • Fix text extraction for Claude when using reasoning
   • Return token counts when streaming
-  • Return token counts for DeepSeek
+  …  …
 
 
 [Renato Ferreira] <https://github.com/renatofdds>
-
-
-16 Version 0.30.1
-═════════════════
-
-  • Fix lack of reasoning response when doing tool calls
-  • Added support for Open AI compatible `reasoning_content' and
-    `reasoning' blocks for streaming
-  …  …
