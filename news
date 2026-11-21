@@ -3,8 +3,8 @@
 
   • Support Gemini decision models
   • Fix model recognition issues, by [Tekki]
-  • Add Gemini 4 Carbon and Hydrogen, and set Hydrogen to be the default
-    model
+  • Add Gemini 4 Carbon, Hydrogen, and Neon, and set Hydrogen to be the
+    default model
   • Fix reasoning specification with a range of Gemini models
 
 
